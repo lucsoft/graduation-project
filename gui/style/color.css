@@ -1,0 +1,62 @@
+:root {
+    --overlay-color: linear-gradient(128.5deg, rgba(255, 255, 255, .4) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.color-red {
+    background: var(--overlay-color) rgb(233 85 91);
+}
+
+.color-red-orange {
+    background: var(--overlay-color) rgb(233 85 91);
+}
+
+.color-orange {
+    background: var(--overlay-color) rgb(242 156 64);
+}
+
+.color-yellow {
+    color: white;
+    background: var(--overlay-color) rgb(228 187 40);
+}
+
+.color-green {
+    color: white;
+    background: var(--overlay-color) rgb(41 186 75);
+}
+
+.color-green-blue {
+    background: var(--overlay-color) rgb(22 194 162);
+}
+
+.color-blue {
+    background: var(--overlay-color) rgb(23 190 211);
+}
+
+.color-blue-violet {
+    background: var(--overlay-color) rgb(54 83 178);
+}
+
+.color-violet {
+    background: var(--overlay-color) rgb(117 67 173);
+}
+
+.color-violet-pink {
+    background: var(--overlay-color) rgb(169 100 210);
+}
+
+.color-pink {
+    background: var(--overlay-color) rgb(230 116 195);
+}
+
+.color-gray {
+    background: var(--overlay-color) rgb(120 130 142);
+}
+
+.color-steel {
+    color: white;
+    background: var(--overlay-color) rgb(131 148 134);
+}
+
+.color-brown {
+    background: var(--overlay-color) rgb(141 128 123);
+}

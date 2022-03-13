@@ -1,0 +1,18 @@
+.sidepanel {
+    background-color: #F9F9F9;
+}
+
+
+
+.navigation .new-tab {
+    color: var(--on-card-text);
+    font-size: 32px;
+    cursor: pointer;
+    padding: 11.5px 12px;
+    /* margin: 0 -8px; */
+    user-select: none;
+}
+
+.actions .action-icon:active, .new-tab:active {
+    transform: translate(0, 1px);
+}

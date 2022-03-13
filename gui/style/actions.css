@@ -1,0 +1,59 @@
+.action {
+    cursor: pointer;
+    user-select: none;
+    background: white;
+    flex-basis: 1;
+}
+
+.action.full {
+    height: 55px;
+    overflow: hidden;
+    border-radius: 13px;
+    box-shadow: 0 0 5px 1px rgba(0, 0, 0, 0.05);
+}
+
+.action.full .title {
+    font-size: 1.2rem;
+    font-weight: 400;
+}
+
+.action.small .title {
+    font-size: 0.67rem;
+    font-weight: 500;
+}
+
+.action .spacer {
+    min-width: 1rem;
+}
+
+.action-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action.small {
+    height: 28px;
+    box-shadow: 0 0 0 0.770548px rgba(0, 0, 0, 0.03);
+    border-radius: 7px;
+}
+
+.action.full .action-icon {
+    margin: 14px;
+    width: 27px;
+    height: 27px;
+    font-size: 21px;
+    border-radius: 5px;
+}
+
+.action.small .action-icon {
+    margin: 4.62px;
+    width: 18.49px;
+    height: 18.49px;
+    font-size: 12px;
+    border-radius: 3.42px;
+}
+
+.action.full .actions .action-icon {
+    font-size: 34px;
+}
