@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { registerMetaCategory, registerMetaData } from "./buildInActions.ts";
+import { registerMetaCategory, registerMetaData } from "./registers.ts";
 import { JResponse, ParamterWithData, StateType } from "./types.ts";
 import { buildInIds, CallParameters, CallStep, CallStepId, Source, Step } from "./spec.ts";
 

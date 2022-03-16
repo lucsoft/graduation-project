@@ -88,7 +88,7 @@ export function register(jcall: JsonCalls) {
                 condition: { id: "buildIn.truthy" },
                 branch: {
                     true: [ { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: false } ] } ],
-                    false: [ { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: false } ] } ]
+                    false: [ { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: true } ] } ]
                 }
             }
         ]
