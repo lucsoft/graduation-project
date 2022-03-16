@@ -21,10 +21,12 @@ export const exampleOne: JsonCallsProtocol = {
                 },
             ],
             actions: "native",
-            icon: "native"
+            icon: "native",
+            color: "gray"
         },
         "step.lampTest": {
             icon: "light",
+            color: "blue",
             displayText: "Blinks the lamp",
             actions: [
                 {
@@ -49,6 +51,7 @@ export const exampleOne: JsonCallsProtocol = {
         },
         "step.lampToggleWithVariables": {
             icon: "light",
+            color: "blue",
             displayText: "Toggles the lamp",
             variables: {
                 state: false
@@ -77,6 +80,7 @@ export const exampleOne: JsonCallsProtocol = {
         },
         "step.lampToggleWithResponse": {
             icon: "light",
+            color: "blue",
             displayText: "Toggles the lamp",
             actions: [
                 {

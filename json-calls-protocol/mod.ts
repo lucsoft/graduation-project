@@ -99,4 +99,7 @@ export class JsonCalls {
             }
         })
     }
+    getStepFromIndex(index: number) {
+        return Array.from(this.steps.values())[ index ];
+    }
 }

@@ -1,6 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 export type Source = { type: "variable", id: string } | { type: "response", id: number } | { type: "paramter", id: string };
 export type Variable = Record<string, string | boolean | number>;
+export type ColorType = "red" | "red-orange" | "orange" | "yellow" | "green" | "green-blue" | "blue" | "blue-violet" | "violet" | "violet-pink" | "pink" | "gray" | "steel" | "brown"
 
 export type buildInIds = "sleep" | "if" | "variable" | "eval" | "invert" | "retryOnFailedResponse" | "while" | "truthy" | "falsy";
 type NativeStepIds = `buildIn.${buildInIds}`;
@@ -22,6 +23,7 @@ export type Step = {
     displayText?: string,
     description?: string
     icon: string,
+    color: ColorType,
     variables?: Variable,
     parameters?: CallParameters[],
     catchFailedResponses?: { [ index in number ]: { [ errortype in any ]: CallStep[] } },
