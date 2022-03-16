@@ -1,8 +1,11 @@
-import { Button, ButtonStyle, MaterialIcons, Card, Color, Component, Grid, headless, Horizontal, Icon, PlainText, Spacer, SupportedThemes, Vertical, View, WebGen } from "../../WebGen/mod.ts";
-import { ActionType, ColorType, TitleType } from "./types.ts";
-import './style/actions.css';
-import './style/sidepanel.css';
+import { MaterialIcons, Horizontal, Icon, SupportedThemes, Vertical, View, WebGen, Input, CustomComponent } from "../../WebGen/mod.ts";
+import { ActionState, State } from "./types.ts";
 import './style/color.css';
+import { EditorView } from "./editor.ts";
+import { Action } from "./action.ts";
+import { DiscoveryView } from "./discovery.ts";
+import './style/sidepanel.css';
+
 WebGen({
     theme: SupportedThemes.light,
     icon: new MaterialIcons()
@@ -13,95 +16,55 @@ const defaultTabs: ActionState[] = [
         color: "yellow",
         type: "full",
         icon: "cleaning_services",
-        title: [ "Wipe Down System" ]
+        title: [ "This is a test" ]
     }
 ];
 
 View<State>(({ state, update }) => Vertical(
     Horizontal(
-        ...(state.tabs ?? []).map((x, i) => (state.selectedTab ?? 0) == i
-            ? Action(Icon(x.icon), x.color, x.type, x.title, [ Icon("play_arrow").addClass("action-icon") ])
-                .setGrow()
-            : Action(Icon(x.icon), x.color, x.type, x.title).onClick(() => update({ selectedTab: i }))),
+        ...(state.tabs ?? []).map(renderNavigationEntry(state, update)),
         Icon("add").addClass("new-tab").onClick(() => {
             update({
                 selectedTab: state.tabs?.length,
                 tabs: [
                     ...state.tabs ?? [],
-                    {
-                        color: "yellow",
-                        type: "full",
-                        icon: "cleaning_services",
-                        title: [ "Wipe Down System" ]
-                    }
+                    "searchtab"
                 ]
             })
         })
-    ).setGap("8px").addClass("navigation").setAlign("center"),
-    Horizontal(
-        Card(headless(
-            Vertical(
-                Grid(
-                    Button("Alle Aktionen")
-                        .setColor(Color.Colored)
-                        .setStyle(ButtonStyle.Secondary),
-                    Button("Ventile")
-                        .setColor(Color.Colored)
-                        .setStyle(ButtonStyle.Inline),
-                    Button("Motore")
-                        .setColor(Color.Colored)
-                        .setStyle(ButtonStyle.Inline),
-                    Button("Heater")
-                        .setColor(Color.Colored)
-                        .setStyle(ButtonStyle.Inline),
-                    Button("Flüssigkeiten")
-                        .setColor(Color.Colored)
-                        .setStyle(ButtonStyle.Inline),
-                    Button("System")
-                        .setColor(Color.Colored)
-                        .setStyle(ButtonStyle.Inline),
-                    Button("Laser")
-                        .setColor(Color.Colored)
-                        .setStyle(ButtonStyle.Inline),
-                    Button("Kamera")
-                        .setColor(Color.Colored)
-                        .setStyle(ButtonStyle.Inline),
-                    Button("Kasseten")
-                        .setColor(Color.Colored)
-                        .setStyle(ButtonStyle.Inline)
-                )
-                    .setEvenColumns(3),
-                Vertical(
-                    Action(Icon("settings"), "green", "small", [ "Motore sperre" ]),
-                    Action(Icon("sensor_door"), "steel", "small", [ "Auf Türschließung warten" ]),
-                    Action(Icon("cleaning_services"), "yellow", "small", [ "Tür sperre" ]),
-                ).setGap("10px")
-            ).setPadding("10px")
-        ))
-            .addClass("sidepanel")
-            .setDirection("column")
-            .setAlign("stretch"),
-        Spacer()
-    ),
+    )
+        .setGap("8px")
+        .addClass("navigation")
+        .setAlign("center"),
+    state.tabs?.[ state.selectedTab ?? 0 ] == "searchtab" ?
+        DiscoveryView(state, update)
+        : EditorView()
 )
     .setPadding("9px 13px")
     .setGap(".7rem"))
-    .appendOn(document.body).unsafeViewOptions().update({
+    .appendOn(document.body)
+    .unsafeViewOptions()
+    .update({
         selectedTab: 0,
         tabs: defaultTabs
     });
 
-function Action(icon: Component, color: ColorType, type: ActionType, title: TitleType, actions: Component[] = []) {
-    return Card(headless(Horizontal(
-        icon.addClass("action-icon").addClass("color-" + color),
-        ...title.map(x =>
-            typeof x == "string"
-                ? PlainText(x).addClass("title")
-                : null
-        ),
-        Spacer(),
-        Vertical(
-            ...actions
-        ).setDirection("row").addClass("actions")
-    ).setAlign("center"))).addClass("action", type.toLowerCase());
+function renderNavigationEntry(state: Partial<State>, update: (data: Partial<State>) => void): (value: ActionState, index: number, array: ActionState[]) => CustomComponent {
+    return (entry, index) => {
+        const main = (state.selectedTab ?? 0) == index;
+        const element = entry == "searchtab"
+            ? Action("search", "steel", "full", [ "Search" ])
+            : Action(entry.icon, entry.color, entry.type, entry.title, true, [ Icon("play_arrow").addClass("action-icon") ])
+        if (main)
+            return element.setGrow(3)
+
+        if (entry == "searchtab")
+            return element
+                .setGrow(1)
+                .onClick(() => update({ selectedTab: index }))
+        return Action(entry.icon, entry.color, entry.type, entry.title)
+            .setGrow(1)
+            .onClick(() => update({ selectedTab: index }))
+
+    };
 }
