@@ -8,10 +8,9 @@ type NativeStepIds = `buildIn.${buildInIds}`;
 
 export type CallStepId = `${"step" | "native"}.${string}` | NativeStepIds;
 export type CallParameters =
-    | { name: string; type: "number"; value?: number | Source; }
+    | { name: string; type: "number"; value?: number | Source; hint?: "count" | "secounds" }
     | { name: string; type: "boolean"; value?: boolean | Source; }
-    | { name: string; type: "string"; value?: string | Source; }
-    | { name: string; type: "function"; value?: undefined | Source; };
+    | { name: string; type: "string"; value?: string | Source; };
 
 export type CallStep = {
     id: CallStepId,
@@ -19,9 +18,12 @@ export type CallStep = {
     condition?: CallStep,
     branch?: Record<string, CallStep[]>
 };
+export type Language = "de" | "en";
+
 export type Step = {
     displayText?: string,
-    description?: string
+    category: string | undefined,
+    inlineText?: Record<Language, (number | string)[]>,
     icon: string,
     color: ColorType,
     variables?: Variable,
@@ -32,5 +34,6 @@ export type Step = {
 export type JsonCallsProtocol = {
     type: "json-calls",
     version: 0,
+    categoryMapping: Record<string, Record<Language, string>>,
     steps: Record<Exclude<CallStepId, NativeStepIds>, Step>
 }

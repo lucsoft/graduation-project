@@ -1,10 +1,45 @@
 // deno-lint-ignore-file no-explicit-any
-import { JsonCallsAction, CallParametersScoped, StateType } from "./JsonCallsAction.ts";
-import { buildInIds, CallParameters, CallStep, CallStepId, Step } from "./spec.ts";
+import { CallParametersScoped, StateType } from "./JsonCallsAction.ts";
+import { buildInIds, CallParameters, CallStep, CallStepId, Source, Step } from "./spec.ts";
 
+type ParamterWithData = Record<string, (
+    | { type: "number", value: number }
+    | { type: "boolean", value: boolean }
+    | { type: "string", value: string }
+)>;
+
+type Response = number | boolean | string | null | undefined;
 export class JsonCalls {
-    native = new Map<string, () => JsonCallsAction>();
+    methodProvider = new Map<string, ((parameters: ParamterWithData) => Response | Promise<Response>)>();
+    native = new Map<string, Step>();
+    buildIn = new Map<string, Step>();
     steps = new Map<string, Step>();
+    category = new Map<string, { de: string, en: string }>();
+
+    constructor() {
+        this.category.set("script", { de: "Skripte", en: "Scripts" });
+        this.buildIn.set("variable", {
+            actions: "native",
+            color: "gray",
+            category: "script",
+            displayText: "Zu Variable hinzufügen",
+            icon: "format_quote"
+        })
+        this.buildIn.set("sleep", {
+            actions: "native",
+            color: "gray",
+            category: "script",
+            displayText: "Warten",
+            icon: "hourglass_bottom"
+        })
+        this.buildIn.set("if", {
+            actions: "native",
+            color: "gray",
+            category: "script",
+            displayText: "Wenn",
+            icon: "fork_right"
+        })
+    }
 
     async singleRun({ id, paramter, branch, condition }: CallStep, state: StateType): Promise<void> {
         state._counter++;
@@ -12,35 +47,37 @@ export class JsonCalls {
         if (!id.includes(".")) throw new Error();
         const [ type, stepID ] = id.split(".");
         if (type == "native") {
-            const func = this.paramter(paramter!, state);
-            if (func == undefined) throw new Error();
-            const action = this.native.get(stepID)?.()[ func.name ];
-            if (action == null) throw new Error();
-            if (typeof action != "function") {
-                state._responses.set(state._counter, action);
-                return;
-            }
-            return await action();
+            const data = this.getParamters(paramter, state);
+            const allParamterSet = this.native.get(stepID)?.parameters?.length ?? 0 === Object.keys(data).length;
+            if (!allParamterSet) throw new Error(`Wrong Paramter(s) was set for Action ${stepID}.`);
+            const privoder = this.methodProvider.get(stepID);
+            if (privoder == undefined) throw new Error(`Can't find step '${stepID}'`);
+            const action = privoder(data);
+            if (action === null) throw new Error(`${stepID} failed with null!`);
+            state._responses.set(state._counter, await action);
+            return;
         }
         if (type == "buildIn") {
             if (paramter === undefined) throw new Error();
+            // TODO: Move this methodProvider
             switch (stepID as buildInIds) {
                 case "sleep":
-                    await new Promise<void>(done => setTimeout(() => done(), this.paramter(paramter, state, "number", "amount")?.value))
+                    await new Promise<void>(done => setTimeout(() => done(), this.getParamters(paramter, state).amount.value as number))
                     return;
                 case "variable": {
-                    const list = paramter.map(x => this.paramter(paramter, state, x.type, x.name)) as (CallParameters | undefined | null)[]
+                    const paras = this.getParamters(paramter, state);
+                    const list = paramter.map(x => paras[ x.name ]) as (CallParameters | undefined | null)[]
                     if (list.includes(undefined) || list.includes(null)) throw new Error();
                     state._responses.set(state._counter, list.map((x) => state[ x!.name ] = x!.value as unknown as string)[ 0 ]);
                     return;
                 }
                 case "truthy": {
-                    const rsp = this.paramter(paramter, state, "boolean", "value")?.value;
+                    const rsp = this.getParamters(paramter, state).value.value;
                     state._responses.set(state._counter, !!rsp);
                     return;
                 }
                 case "falsy": {
-                    const rsp = this.paramter(paramter, state, "boolean", "value")?.value;
+                    const rsp = this.getParamters(paramter, state).value.value;
                     state._responses.set(state._counter, !rsp);
                     return;
                 } case "if": {
@@ -59,24 +96,27 @@ export class JsonCalls {
         }
         throw new Error();
     }
-    paramter<Type extends "number" | "boolean" | "string" | "function">(data: CallParameters[], state: StateType, type?: Type, name?: string): (Type extends undefined ? CallParameters : CallParametersScoped<Type>) | undefined {
-        const rsp = data.find(x => (name === undefined ? true : x.name == name) && type === undefined ? true : x.type == type) as CallParameters;
-        if (rsp == null) throw new Error("Failed to find target");
-        if (typeof rsp.value == "object") {
-            switch (rsp.value.type) {
+    getParamters(data: CallParameters[] | undefined, state: StateType): ParamterWithData {
+        return data ? Object.fromEntries(data.map(({ name, type, value }) => [ name, { type, value: this.getDataFromSource(value, state) } ])) : {};
+    }
+
+    getDataFromSource(data: string | number | boolean | Source | undefined, state: StateType) {
+        if (typeof data === "object")
+            switch (data.type) {
                 case "variable":
-                    if (!Object.hasOwn(state, rsp.value.id)) throw new Error();
-                    return { ...rsp, value: state[ rsp.value.id ] } as any;
+                    if (!Object.hasOwn(state, data.id)) throw new Error();
+                    return state[ data.id ];
                 case "paramter":
                     throw new Error("not implemented")
                 case "response": {
-                    if (!state._responses.has(rsp.value.id)) throw new Error();
-                    return { ...rsp, value: state._responses.get(rsp.value.id) } as any;
+                    if (!state._responses.has(data.id)) throw new Error();
+                    return state._responses.get(data.id);
                 }
             }
-        }
-        return { ...rsp } as any;
+        else
+            return data;
     }
+
     streamRun(id: CallStepId) {
         console.log(`%cStreamRun@JsonCalls: ${id}`, "color: gray");
         if (!id.startsWith("step.")) throw new Error("Not starting with step.");
@@ -99,7 +139,17 @@ export class JsonCalls {
             }
         })
     }
-    getStepFromIndex(index: number) {
+    getStepMapFromType(type: string) {
+        switch (type) {
+            case "buildIn":
+                return this.buildIn;
+            case "native":
+                return this.native;
+            case "step":
+                return this.steps;
+        }
+    }
+    getStepFromIndex(index: number): Step | null {
         return Array.from(this.steps.values())[ index ];
     }
 }

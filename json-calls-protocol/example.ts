@@ -3,36 +3,35 @@ import { JsonCallsProtocol } from "./spec.ts";
 export const exampleOne: JsonCallsProtocol = {
     type: "json-calls",
     version: 0,
+    categoryMapping: {
+        "test": {
+            de: "Test",
+            en: "Test"
+        }
+    },
     steps: {
         "native.lamp": {
             parameters: [
                 {
-                    name: "on",
-                    type: "function"
-                },
-                {
-                    name: "off",
-                    type: "function"
-                },
-                {
-                    name: "state",
-                    type: "boolean",
-                    value: false
-                },
+                    name: "value",
+                    type: "boolean"
+                }
             ],
             actions: "native",
+            category: "test",
             icon: "native",
             color: "gray"
         },
         "step.lampTest": {
             icon: "light",
             color: "blue",
+            category: undefined,
             displayText: "Blinks the lamp",
             actions: [
                 {
                     id: "native.lamp",
                     paramter: [
-                        { name: "on", type: "function" }
+                        { name: "value", type: "boolean", value: true }
                     ]
                 },// Response(Success, 0, null)
                 {
@@ -44,7 +43,7 @@ export const exampleOne: JsonCallsProtocol = {
                 {
                     id: "native.lamp",
                     paramter: [
-                        { name: "off", type: "function" }
+                        { name: "value", type: "boolean", value: false }
                     ]
                 } // Response(Success, 2, null)
             ]
@@ -52,6 +51,7 @@ export const exampleOne: JsonCallsProtocol = {
         "step.lampToggleWithVariables": {
             icon: "light",
             color: "blue",
+            category: undefined,
             displayText: "Toggles the lamp",
             variables: {
                 state: false
@@ -60,7 +60,7 @@ export const exampleOne: JsonCallsProtocol = {
                 {
                     id: "native.lamp",
                     paramter: [
-                        { name: "off", type: "function" }
+                        { name: "value", type: "boolean", value: false }
                     ]
                 },
                 {
@@ -72,8 +72,8 @@ export const exampleOne: JsonCallsProtocol = {
                     paramter: [ { type: "boolean", name: "value", value: { type: "variable", id: "state" } } ],
                     condition: { id: "buildIn.truthy" },
                     branch: {
-                        true: [ { id: "native.lamp", paramter: [ { type: "function", name: "off" } ] } ],
-                        false: [ { id: "native.lamp", paramter: [ { type: "function", name: "on" } ] } ]
+                        true: [ { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: false } ] } ],
+                        false: [ { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: false } ] } ]
                     }
                 }
             ]
@@ -81,6 +81,7 @@ export const exampleOne: JsonCallsProtocol = {
         "step.lampToggleWithResponse": {
             icon: "light",
             color: "blue",
+            category: undefined,
             displayText: "Toggles the lamp",
             actions: [
                 {
@@ -92,8 +93,8 @@ export const exampleOne: JsonCallsProtocol = {
                     paramter: [ { type: "boolean", name: "state", value: { type: "response", id: 1 } } ],
                     condition: { id: "buildIn.truthy" },
                     branch: {
-                        true: [ { id: "native.lamp", paramter: [ { type: "function", name: "off" } ] } ],
-                        false: [ { id: "native.lamp", paramter: [ { type: "function", name: "on" } ] } ]
+                        true: [ { id: "native.lamp", paramter: [ { type: "boolean", value: false, name: "value" } ] } ],
+                        false: [ { id: "native.lamp", paramter: [ { type: "boolean", value: true, name: "value" } ] } ]
                     }
                 },
 
@@ -107,8 +108,8 @@ export const exampleOne: JsonCallsProtocol = {
                     paramter: [ { type: "boolean", name: "state", value: { type: "response", id: 5 } } ],
                     condition: { id: "buildIn.truthy" },
                     branch: {
-                        true: [ { id: "native.lamp", paramter: [ { type: "function", name: "off" } ] } ],
-                        false: [ { id: "native.lamp", paramter: [ { type: "function", name: "on" } ] } ]
+                        true: [ { id: "native.lamp", paramter: [ { type: "boolean", value: false, name: "value" } ] } ],
+                        false: [ { id: "native.lamp", paramter: [ { type: "boolean", value: true, name: "value" } ] } ]
                     }
                 }
             ]
