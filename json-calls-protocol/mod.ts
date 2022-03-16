@@ -1,44 +1,18 @@
 // deno-lint-ignore-file no-explicit-any
-import { CallParametersScoped, StateType } from "./JsonCallsAction.ts";
+import { registerMetaCategory, registerMetaData } from "./buildInActions.ts";
+import { JResponse, ParamterWithData, StateType } from "./types.ts";
 import { buildInIds, CallParameters, CallStep, CallStepId, Source, Step } from "./spec.ts";
 
-type ParamterWithData = Record<string, (
-    | { type: "number", value: number }
-    | { type: "boolean", value: boolean }
-    | { type: "string", value: string }
-)>;
-
-type Response = number | boolean | string | null | undefined;
 export class JsonCalls {
-    methodProvider = new Map<string, ((parameters: ParamterWithData) => Response | Promise<Response>)>();
+    methodProvider = new Map<string, ((parameters: ParamterWithData) => JResponse | Promise<JResponse>)>();
     native = new Map<string, Step>();
     buildIn = new Map<string, Step>();
     steps = new Map<string, Step>();
     category = new Map<string, { de: string, en: string }>();
 
     constructor() {
-        this.category.set("script", { de: "Skripte", en: "Scripts" });
-        this.buildIn.set("variable", {
-            actions: "native",
-            color: "gray",
-            category: "script",
-            displayText: "Zu Variable hinzufügen",
-            icon: "format_quote"
-        })
-        this.buildIn.set("sleep", {
-            actions: "native",
-            color: "gray",
-            category: "script",
-            displayText: "Warten",
-            icon: "hourglass_bottom"
-        })
-        this.buildIn.set("if", {
-            actions: "native",
-            color: "gray",
-            category: "script",
-            displayText: "Wenn",
-            icon: "fork_right"
-        })
+        registerMetaCategory(this.category);
+        registerMetaData(this.buildIn);
     }
 
     async singleRun({ id, paramter, branch, condition }: CallStep, state: StateType): Promise<void> {
@@ -96,6 +70,7 @@ export class JsonCalls {
         }
         throw new Error();
     }
+
     getParamters(data: CallParameters[] | undefined, state: StateType): ParamterWithData {
         return data ? Object.fromEntries(data.map(({ name, type, value }) => [ name, { type, value: this.getDataFromSource(value, state) } ])) : {};
     }
