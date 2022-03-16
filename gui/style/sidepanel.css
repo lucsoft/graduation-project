@@ -1,18 +1,45 @@
+html {
+    --background-color: #ECECEC !important;
+}
+
 .sidepanel {
     background-color: #F9F9F9;
 }
-
-
 
 .navigation .new-tab {
     color: var(--on-card-text);
     font-size: 32px;
     cursor: pointer;
     padding: 11.5px 12px;
-    /* margin: 0 -8px; */
     user-select: none;
 }
 
-.actions .action-icon:active, .new-tab:active {
+.container {
+    height: calc(100vh - 55px - 30px);
+    overflow: hidden;
+}
+
+:not(.main).action-icon:active, .new-tab:active {
     transform: translate(0, 1px);
+}
+
+.sidepanel .winput input {
+    color: #434244;
+}
+
+.sidepanel .winput:not(.has-value) span {
+    padding-top: 13px;
+}
+
+.sidepanel .winput {
+    height: 39px;
+    background-color: #E9E9E9;
+    color: #434244;
+}
+
+.sidepanel .quick-filter .wbutton {
+    height: 20px;
+    padding: 0 5px;
+    font-size: 11px;
+    font-weight: 500;
 }

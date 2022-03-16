@@ -5,6 +5,20 @@
     flex-basis: 1;
 }
 
+.action .spacer {
+    min-width: 1rem;
+}
+
+.action-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/**
+* Action Full
+*/
+
 .action.full {
     height: 55px;
     overflow: hidden;
@@ -17,19 +31,54 @@
     font-weight: 400;
 }
 
+
+.action.full .action-icon {
+    margin: 14px;
+    width: 27px;
+    height: 27px;
+    font-size: 21px;
+    border-radius: 5px;
+    transition: opacity 150ms ease;
+
+}
+
+.action.full.focus .action-icon {
+    width: 36.66px;
+    height: 36.66px;
+    margin: 10px;
+    font-size: 27.16px;
+    border-radius: 6.79px;
+}
+
+.action.full .actions .action-icon {
+    font-size: 34px;
+}
+
+.action.full .close-button {
+    /* display: none; */
+    font-size: 28px;
+    opacity: 0;
+    transition: opacity 250ms ease;
+    margin-left: -2.5rem;
+}
+
+.action.full:hover .close-button {
+    /* display: block; */
+    opacity: 1;
+    z-index: 1;
+}
+
+.action:not(.focus).full:hover .main {
+    /* display: none; */
+    opacity: 0;
+}
+
+/**
+* Action Small
+*/
 .action.small .title {
     font-size: 0.67rem;
     font-weight: 500;
-}
-
-.action .spacer {
-    min-width: 1rem;
-}
-
-.action-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .action.small {
@@ -38,22 +87,47 @@
     border-radius: 7px;
 }
 
-.action.full .action-icon {
-    margin: 14px;
-    width: 27px;
-    height: 27px;
-    font-size: 21px;
-    border-radius: 5px;
-}
-
 .action.small .action-icon {
     margin: 4.62px;
+    margin-right: 6px;
     width: 18.49px;
     height: 18.49px;
     font-size: 12px;
     border-radius: 3.42px;
 }
 
-.action.full .actions .action-icon {
-    font-size: 34px;
+.action.small.light {
+    background: rgb(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/**
+Action Normal
+*/
+
+.action.normal {
+    height: 36px;
+}
+
+.action.normal .title {
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.action.normal .action-icon.main {
+    border-radius: 4.44px;
+    margin: 6px;
+    margin-right: 10px;
+    width: 24px;
+    height: 24px;
+    font-size: 17.78px;
+}
+
+.action.normal .close-button {
+    opacity: 0;
+    transition: opacity 250ms ease;
+}
+
+.action.normal:hover .close-button {
+    opacity: 1;
 }
