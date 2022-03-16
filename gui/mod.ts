@@ -7,18 +7,7 @@ WebGen({
     theme: SupportedThemes.light,
     icon: new MaterialIcons()
 })
-type ActionState = {
-    icon: string,
-    color: ColorType,
-    type: ActionType,
-    title: TitleType
-};
-type State = {
-    selectedTab: number,
-    tabs: ActionState[]
-};
-// Action(Icon("cleaning_services"), "yellow", "full", [ "Wipe Down System" ]),
-// Action(Icon("cleaning_services"), "yellow", "full", [ "Wipe Down System" ], [ Icon("play_arrow").addClass("action-icon") ]).setGrow(),
+
 const defaultTabs: ActionState[] = [
     {
         color: "yellow",

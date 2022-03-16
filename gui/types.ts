@@ -3,3 +3,14 @@ export type ColorType = "red" | "red-orange" | "orange" | "yellow" | "green" | "
 export type TitleType = (string | {
     type: "button";
 })[];
+
+export type ActionState = {
+    icon: string,
+    color: ColorType,
+    type: ActionType,
+    title: TitleType
+} | "searchtab";
+export type State = {
+    selectedTab: number,
+    tabs: ActionState[]
+};
