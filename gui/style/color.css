@@ -7,7 +7,7 @@
 }
 
 .color-red-orange {
-    background: var(--overlay-color) rgb(233 85 91);
+    background: var(--overlay-color) rgb(251 119 91);
 }
 
 .color-orange {
@@ -33,6 +33,7 @@
 }
 
 .color-blue-violet {
+    color: white;
     background: var(--overlay-color) rgb(54 83 178);
 }
 
