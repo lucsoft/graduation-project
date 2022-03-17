@@ -4,6 +4,13 @@ html {
 
 .sidepanel {
     background-color: #F9F9F9;
+    overflow: auto;
+}
+
+.sidepanel .vertical-stack .vertical-stack {
+    display: grid;
+    height: unset;
+    padding-bottom: 10px;
 }
 
 .navigation .new-tab {

@@ -46,7 +46,7 @@ export function register(jcall: JsonCalls) {
     jcall.steps.set("lampToggle", {
         icon: "light",
         category: "test",
-        displayText: "Flips the lamp",
+        displayText: "Branching Test",
         color: "yellow",
         actions: [
             {
@@ -116,7 +116,7 @@ export function register(jcall: JsonCalls) {
         icon: "light",
         color: "violet",
         category: "test",
-        displayText: "Blinks the lamp",
+        displayText: "Blinken",
         actions: [
             {
                 id: "native.lamp",
@@ -138,4 +138,5 @@ export function register(jcall: JsonCalls) {
             },
         ]
     })
+
 }
