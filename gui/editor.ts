@@ -1,13 +1,14 @@
 import { Button, ButtonStyle, Card, Color, Component, Grid, headless, Horizontal, Input, PlainText, Spacer, Vertical } from "../../WebGen/mod.ts";
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
-import { CallStep } from "../json-calls-protocol/spec.ts";
-import { Action, ActionAsStep, ActionWithCaller } from "./action.ts";
+import { CallStep, Step } from "../json-calls-protocol/spec.ts";
+import { SimpleAction } from "./action.ts";
 import { translate } from "./i8n.ts";
+import { RichAction } from "./richAction.ts";
 import { State } from "./types.ts";
 
 export const EditorView = (jcall: JsonCalls, state: Partial<State>, _update: (data: Partial<State>) => void) => {
-    const actions = jcall.getStepFromIndex(state.tabs?.[ state.selectedTab ?? 0 ] as number)?.actions;
-    if (!actions) return null;
+    const step = jcall.getStepFromIndex(state.tabs?.[ state.selectedTab ?? 0 ] as number);
+    if (!step) return null;
     return Horizontal(
         Card(headless(
             Vertical(
@@ -48,9 +49,14 @@ export const EditorView = (jcall: JsonCalls, state: Partial<State>, _update: (da
                     .setPadding("18px 0")
                     .setEvenColumns(3),
                 Vertical(
-                    Action(("settings"), "green", "small", [ "Motore sperre" ]),
-                    Action(("sensor_door"), "steel", "small", [ "Auf Türschließung warten" ]),
-                    Action(("cleaning_services"), "yellow", "small", [ "Tür sperre" ])
+                    ...(Array.from([
+                        ...jcall.steps.entries(),
+                        ...jcall.buildIn.entries(),
+                        ...jcall.native.entries()
+                    ])
+                        .map(([ _, step ]) => step)
+                        .filter(step => step.category !== "conditions")
+                        .map(step => SimpleAction(step, "small", false))),
                 ).setGap("8px")
             ).setPadding("10px")
         ))
@@ -58,30 +64,34 @@ export const EditorView = (jcall: JsonCalls, state: Partial<State>, _update: (da
             .setDirection("column")
             .setAlign("stretch"),
         Spacer(),
-        actions === "native"
+        step.actions === "native"
             ? PlainText("Can't edit a Native Action")
             : Vertical(
-                ...actions.map(x => renderCallStep(jcall, x)).flat(),
+                ...step.actions.map(x => renderCallStep(jcall, x, step)).flat(),
             ).setGap("14px").setWidth("45%"),
         Spacer()
     ).addClass("container");
 };
 
-function renderCallStep(jcall: JsonCalls, { id: stepId, branch, paramter }: CallStep) {
-    const [ stepType, stepRawId ] = stepId.split(".");
-    const step = jcall.getStepMapFromType(stepType)?.get(stepRawId);
-    const list: (Component | null)[] = [ step ? ActionWithCaller(step, { id: stepId, branch, paramter }) : Action("question_mark", "gray", "normal", [ translate(stepId) ]) ];
-    console.log()
-    if (branch)
-        list.push(...Object.entries(branch)
+function renderCallStep(jcall: JsonCalls, call: CallStep, main: Step) {
+    const step = jcall.getMetaDataFromId(call.id);
+    const list: (Component | null)[] = [ step ? RichAction(jcall, step, call, main) : incompatibleFunction(call.id) ];
+    if (call.branch)
+        list.push(...Object.entries(call.branch)
             .map(([ id, data ]) => [
-                `${stepId}.${id}` == "buildIn.if.true" ? null : Action(step?.icon, step?.color, "normal", [ translate(`${stepId}.${id}`) ]),
-                Horizontal(...data.map(x => renderCallStep(jcall, x)).flat())
+                `${call.id}.${id}` == "buildIn.if.true"
+                    ? null
+                    : SimpleAction({ icon: step?.icon!, actions: "native", category: undefined, color: step?.color!, displayText: translate(`${call.id}.${id}`) }, "normal"),
+                Horizontal(...data.map(x => renderCallStep(jcall, x, main)).flat())
                     .setPadding("0 0 0 1rem")
+                    .setGap("10px")
                     .setDirection("column")
-            ]
-            ).flat(),
-            Action(step?.icon, step?.color, "normal", [ translate(`${stepId}.end`) ])
+            ]).flat(),
+            SimpleAction({ icon: step?.icon!, color: step?.color!, category: undefined, actions: "native", displayText: translate(`${call.id}.end`) }, "normal")
         )
     return list;
+}
+
+function incompatibleFunction(stepId: `step.${string}` | `native.${string}` | `buildIn.${string}`): Component | null {
+    return SimpleAction({ icon: "question_mark", color: "gray", category: undefined, actions: "native", displayText: translate(stepId) }, "normal");
 }

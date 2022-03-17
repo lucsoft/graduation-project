@@ -1,8 +1,8 @@
-import { MaterialIcons, Horizontal, Icon, SupportedThemes, Vertical, View, WebGen, CustomComponent } from "../../WebGen/mod.ts";
+import { MaterialIcons, Horizontal, Icon, SupportedThemes, Vertical, View, WebGen, CustomComponent, PlainText, headless, Card } from "../../WebGen/mod.ts";
 import { State, TabEntry } from "./types.ts";
 import './style/color.css';
 import { EditorView } from "./editor.ts";
-import { Action, ActionAsStep } from "./action.ts";
+import { SimpleAction } from "./action.ts";
 import { DiscoveryView } from "./discovery.ts";
 import './style/sidepanel.css';
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
@@ -53,8 +53,8 @@ function renderNavigationEntry(state: Partial<State>, update: (data: Partial<Sta
     return (entry, index) => {
         const main = (state.selectedTab ?? 0) == index;
         const element = entry == "search-tab"
-            ? Action("search", "steel", "full", [ "Search" ])
-            : ActionAsStep(jcall.getStepFromIndex(entry)!, "full", true, [ Icon("play_arrow").addClass("action-icon") ])
+            ? Card(headless(PlainText("Search"))).addClass("action", "full")// Action("search", "steel", "full", [ "Search" ])
+            : SimpleAction(jcall.getStepFromIndex(entry)!, "full", true, [ Icon("play_arrow").addClass("action-icon") ])
         if (main)
             return element.setGrow(3)
 
@@ -62,7 +62,7 @@ function renderNavigationEntry(state: Partial<State>, update: (data: Partial<Sta
             return element
                 .setGrow(1)
                 .onClick(() => update({ selectedTab: index }))
-        return ActionAsStep(jcall.getStepFromIndex(entry)!, "full")
+        return SimpleAction(jcall.getStepFromIndex(entry)!, "full")
             .setGrow(1)
             .onClick(() => update({ selectedTab: index }))
 

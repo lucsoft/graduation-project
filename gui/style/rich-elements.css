@@ -1,0 +1,25 @@
+.normal .rich-elements {
+    gap: 4px;
+}
+
+.rich-elements .element.winput span {
+    display: none;
+}
+
+.rich-elements .element.wbutton {
+    height: 19px;
+    padding: 0 5px;
+    font-size: 0.8rem;
+}
+
+.rich-elements .element .main {
+    color: var(--on-card-text);
+}
+
+.rich-elements .element .action-icon.main {
+    font-size: 9px;
+    width: 13px;
+    height: 13px;
+    margin: 0px 3px 0px -2px;
+    border-radius: 3px;
+}

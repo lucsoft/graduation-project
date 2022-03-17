@@ -16,11 +16,13 @@
 
 .color-yellow {
     color: white;
+    --on-card-text: white;
     background: var(--overlay-color) rgb(228 187 40);
 }
 
 .color-green {
     color: white;
+    --on-card-text: white;
     background: var(--overlay-color) rgb(41 186 75);
 }
 
@@ -34,11 +36,13 @@
 
 .color-blue-violet {
     color: white;
+    --on-card-text: white;
     background: var(--overlay-color) rgb(54 83 178);
 }
 
 .color-violet {
     color: white;
+    --on-card-text: white;
     background: var(--overlay-color) rgb(117 67 173);
 }
 
@@ -56,6 +60,7 @@
 
 .color-steel {
     color: white;
+    --on-card-text: white;
     background: var(--overlay-color) rgb(131 148 134);
 }
 

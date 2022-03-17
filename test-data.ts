@@ -62,14 +62,14 @@ export function register(jcall: JsonCalls) {
                         {
                             id: "buildIn.sleep",
                             paramter: [
-                                { name: "amount", type: "number", value: 1000 }
+                                { name: "amount", type: "number", value: 3 }
                             ]
                         },
                         { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: true } ] },
                         {
                             id: "buildIn.sleep",
                             paramter: [
-                                { name: "amount", type: "number", value: 1000 }
+                                { name: "amount", type: "number", value: 2 }
                             ]
                         },
                         { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: false } ] }
@@ -127,7 +127,7 @@ export function register(jcall: JsonCalls) {
             {
                 id: "buildIn.sleep",
                 paramter: [
-                    { name: "amount", type: "number", value: 1000 }
+                    { name: "amount", type: "number", value: 5 }
                 ]
             },
             {

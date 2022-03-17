@@ -122,7 +122,6 @@ Action Normal
 .action.normal .action-icon.main {
     border-radius: 4.44px;
     margin: 6px;
-    margin-right: 10px;
     width: 24px;
     height: 24px;
     font-size: 17.78px;
@@ -130,6 +129,8 @@ Action Normal
 
 .action.normal .close-button {
     opacity: 0;
+    font-size: 1rem;
+    margin: 8px;
     transition: opacity 250ms ease;
 }
 

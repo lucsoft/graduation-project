@@ -1,7 +1,7 @@
-import { CallParameters, ColorType } from "../json-calls-protocol/spec.ts";
+import { CallParameters, CallStep, ColorType } from "../json-calls-protocol/spec.ts";
 
 export type ActionType = "full" | "full.focus" | "normal" | "small" | "small.light";
-export type TitleType = (string | CallParameters)[];
+export type TitleType = (string | CallParameters | CallStep)[];
 
 export type ActionState = {
     icon: string,

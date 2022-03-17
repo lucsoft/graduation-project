@@ -1,7 +1,7 @@
 import { Component, Horizontal, Spacer, Vertical, PlainText, Grid } from "../../WebGen/mod.ts";
 import { limit } from "../helper.ts";
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
-import { ActionAsStep } from "./action.ts";
+import { SimpleAction } from "./action.ts";
 import { State } from "./types.ts";
 
 export function DiscoveryView(jcall: JsonCalls, state: Partial<State>, update: (data: Partial<State>) => void): Component {
@@ -17,7 +17,7 @@ export function DiscoveryView(jcall: JsonCalls, state: Partial<State>, update: (
             ),
             Grid(
                 ...Array.from(jcall.steps.values()).filter(limit(3 * 2)).map((x, index) =>
-                    ActionAsStep(x, "full.focus")
+                    SimpleAction(x, "full.focus")
                         .onClick(() => {
                             update({
                                 tabs: state.tabs?.map((x, i) => i == state.selectedTab ? index : x)
@@ -35,7 +35,7 @@ export function DiscoveryView(jcall: JsonCalls, state: Partial<State>, update: (
             ),
             Grid(
                 ...Array.from(jcall.steps.values()).map((x, index) =>
-                    ActionAsStep(x, "normal", false)
+                    SimpleAction(x, "normal", false)
                         .onClick(() => {
                             update({
                                 tabs: state.tabs?.map((x, i) => i == state.selectedTab ? index : x)
