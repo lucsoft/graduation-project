@@ -22,7 +22,7 @@ export const exampleOne: JsonCallsProtocol = {
             icon: "native",
             color: "gray"
         },
-        "step.lampTest": {
+        "user.lampTest": {
             icon: "light",
             color: "blue",
             category: undefined,
@@ -48,7 +48,7 @@ export const exampleOne: JsonCallsProtocol = {
                 } // Response(Success, 2, null)
             ]
         },
-        "step.lampToggleWithVariables": {
+        "user.lampToggleWithVariables": {
             icon: "light",
             color: "blue",
             category: undefined,
@@ -78,7 +78,7 @@ export const exampleOne: JsonCallsProtocol = {
                 }
             ]
         },
-        "step.lampToggleWithResponse": {
+        "user.lampToggleWithResponse": {
             icon: "light",
             color: "blue",
             category: undefined,

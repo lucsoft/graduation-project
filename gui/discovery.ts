@@ -16,7 +16,7 @@ export function DiscoveryView(jcall: JsonCalls, state: Partial<State>, update: (
                 Spacer()
             ),
             Grid(
-                ...Array.from(jcall.steps.values()).filter(limit(3 * 2)).map((x, index) =>
+                ...Array.from(jcall.userActions.values()).filter(limit(3 * 2)).map((x, index) =>
                     SimpleAction(x, "full.focus")
                         .onClick(() => {
                             update({
@@ -34,7 +34,7 @@ export function DiscoveryView(jcall: JsonCalls, state: Partial<State>, update: (
                 Spacer()
             ),
             Grid(
-                ...Array.from(jcall.steps.values()).map((x, index) =>
+                ...Array.from(jcall.userActions.values()).map((x, index) =>
                     SimpleAction(x, "normal", false)
                         .onClick(() => {
                             update({

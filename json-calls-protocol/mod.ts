@@ -1,18 +1,19 @@
 // deno-lint-ignore-file no-explicit-any
 import { registerMetaCategory, registerMetaData } from "./registers.ts";
 import { JResponse, ParamterWithData } from "./types.ts";
-import { CallParameters, CallStep, CallStepId, Source, Step, State } from "./spec.ts";
+import { CallParameters, CallStep, ActionId, Source, Step, State } from "./spec.ts";
 export class JsonCalls {
+    nativeActions = new Map<string, Step>();
+    buildInActions = new Map<string, Step>();
+    userActions = new Map<string, Step>();
+
     methodProvider = new Map<string, ((parameters: ParamterWithData) => JResponse | Promise<JResponse>)>();
-    native = new Map<string, Step>();
-    buildIn = new Map<string, Step>();
-    steps = new Map<string, Step>();
     category = new Map<string, { de: string, en: string }>();
     language: "de" | "en" = "de";
 
     constructor() {
         registerMetaCategory(this.category);
-        registerMetaData(this.buildIn);
+        registerMetaData(this.buildInActions);
     }
 
     async singleRun(controller: ReadableStreamController<State>, { id, paramter, branch, condition }: CallStep, state: State): Promise<void> {
@@ -23,7 +24,7 @@ export class JsonCalls {
         const [ type, stepID ] = id.split(".");
         if (type == "native") {
             const data = this.getParamters(paramter, state);
-            const allParamterSet = this.native.get(stepID)?.parameters?.length ?? 0 === Object.keys(data).length;
+            const allParamterSet = this.nativeActions.get(stepID)?.parameters?.length ?? 0 === Object.keys(data).length;
             if (!allParamterSet) throw new Error(`Wrong Paramter(s) was set for Action ${stepID}.`);
             const privoder = this.methodProvider.get(stepID);
             if (privoder == undefined) throw new Error(`Can't find step '${stepID}'`);
@@ -102,16 +103,16 @@ export class JsonCalls {
         if (id.branch) list.push(...Object.values(id.branch).map(x => x.map(x => this.getSizeInCall(x).flat())).flat());
         return list.filter(x => x);
     }
-    getSize(id: CallStepId): number {
+    getSize(id: ActionId): number {
         const [ _, stepId ] = id.split(".");
-        const step = this.steps.get(stepId);
+        const step = this.userActions.get(stepId);
         if (step?.actions == "native") return 1;
         return step?.actions.map(x => this.getSizeInCall(x)).flat().length ?? -1;
     }
-    streamRun(id: CallStepId) {
-        if (!id.startsWith("step.")) throw new Error("Not starting with step.");
+    streamRun(id: ActionId) {
+        if (!id.startsWith("user.")) throw new Error("Not starting with user.");
         const [ _, stepId ] = id.split(".");
-        const step = this.steps.get(stepId);
+        const step = this.userActions.get(stepId);
         if (step === undefined || step.actions === undefined || step.actions === "native") throw new Error("invalid data")
         const state = {
             ...step.variables ?? {},
@@ -135,17 +136,17 @@ export class JsonCalls {
     getStepMapFromType(type: string) {
         switch (type.split('.')[ 0 ]) {
             case "buildIn":
-                return this.buildIn;
+                return this.buildInActions;
             case "native":
-                return this.native;
-            case "step":
-                return this.steps;
+                return this.nativeActions;
+            case "user":
+                return this.userActions;
         }
     }
     getStepFromIndex(index: number): Step | null {
-        return Array.from(this.steps.values())[ index ];
+        return Array.from(this.userActions.values())[ index ];
     }
     getStepIdFromIndex(index: number): string | null {
-        return Array.from(this.steps.keys())[ index ];
+        return Array.from(this.userActions.keys())[ index ];
     }
 }

@@ -35,7 +35,6 @@ export const renderRichTitle = (title: TitleType, main?: Step, jcall?: JsonCalls
 function renderInline(x: CallParameters | CallStep, main?: Step, jcall?: JsonCalls) {
     if (x == null) throw new Error("CallParamter is null");
     if (isCallStep(x)) {
-        console.log(x);
         return Button(jcall?.getMetaDataFromId(x.id)?.displayText ?? "lol")
             .setColor(Color.Colored)
             .setStyle(ButtonStyle.Secondary)

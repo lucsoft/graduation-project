@@ -3,7 +3,7 @@ export type Source = { type: "variable", id: string } | { type: "response", id: 
 export type Variable = Record<string, string | boolean | number>;
 export type ColorType = "red" | "red-orange" | "orange" | "yellow" | "green" | "green-blue" | "blue" | "blue-violet" | "violet" | "violet-pink" | "pink" | "gray" | "steel" | "brown"
 export type State = Record<string, string | boolean | number | Map<number, any>> & { _callsLeft: number, _counter: number, _responses: Map<number, any> };
-export type CallStepId = `${"step" | "native" | "buildIn"}.${string}`;
+export type ActionId = `${"user" | "native" | "buildIn"}.${string}`;
 export type CallHints = "count" | "secounds" | "power" | "lock" | "value";
 export type CallParameters =
     | { name: string; type: "number"; value?: number | Source; hint?: CallHints }
@@ -11,7 +11,7 @@ export type CallParameters =
     | { name: string; type: "string"; value?: string | Source; hint?: CallHints };
 
 export type CallStep = {
-    id: CallStepId,
+    id: ActionId,
     paramter?: CallParameters[],
     condition?: CallStep,
     branch?: Record<string, CallStep[]>
@@ -26,12 +26,11 @@ export type Step = {
     color: ColorType,
     variables?: Variable,
     parameters?: CallParameters[],
-    catchFailedResponses?: { [ index in number ]: { [ errortype in any ]: CallStep[] } },
     actions: CallStep[] | 'native'
 };
 export type JsonCallsProtocol = {
     type: "json-calls",
     version: 0,
     categoryMapping: Record<string, Record<Language, string>>,
-    steps: Record<CallStepId, Step>
+    steps: Record<ActionId, Step>
 }

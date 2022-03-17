@@ -1,6 +1,6 @@
 import { Button, ButtonStyle, Card, Color, Component, Grid, headless, Horizontal, Input, PlainText, Spacer, Vertical } from "../../WebGen/mod.ts";
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
-import { CallStep, Step } from "../json-calls-protocol/spec.ts";
+import { ActionId, CallStep, Step } from "../json-calls-protocol/spec.ts";
 import { SimpleAction } from "./action.ts";
 import { translate } from "./i8n.ts";
 import { RichAction } from "./richAction.ts";
@@ -50,9 +50,9 @@ export const EditorView = (jcall: JsonCalls, state: Partial<State>, _update: (da
                     .setEvenColumns(3),
                 Vertical(
                     ...(Array.from([
-                        ...jcall.steps.entries(),
-                        ...jcall.buildIn.entries(),
-                        ...jcall.native.entries()
+                        ...jcall.userActions.entries(),
+                        ...jcall.buildInActions.entries(),
+                        ...jcall.nativeActions.entries()
                     ])
                         .map(([ _, step ]) => step)
                         .filter(step => step.category !== "conditions")
@@ -92,6 +92,6 @@ function renderCallStep(jcall: JsonCalls, call: CallStep, main: Step) {
     return list;
 }
 
-function incompatibleFunction(stepId: `step.${string}` | `native.${string}` | `buildIn.${string}`): Component | null {
+function incompatibleFunction(stepId: ActionId): Component | null {
     return SimpleAction({ icon: "question_mark", color: "gray", category: undefined, actions: "native", displayText: translate(stepId) }, "normal");
 }

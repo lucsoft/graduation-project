@@ -14,7 +14,7 @@ export function register(jcall: JsonCalls) {
         lampState = value.value;
         return lampState;
     });
-    jcall.native.set("getLamp", {
+    jcall.nativeActions.set("getLamp", {
         color: "yellow",
         category: "test",
         inlineText: {
@@ -25,7 +25,7 @@ export function register(jcall: JsonCalls) {
         displayText: "Licht abrufen",
         actions: "native"
     });
-    jcall.native.set("lamp", {
+    jcall.nativeActions.set("lamp", {
         color: "yellow",
         category: "test",
         inlineText: {
@@ -43,7 +43,7 @@ export function register(jcall: JsonCalls) {
             }
         ]
     });
-    jcall.steps.set("lampToggle", {
+    jcall.userActions.set("lampToggle", {
         icon: "light",
         category: "test",
         displayText: "Branching Test",
@@ -79,7 +79,7 @@ export function register(jcall: JsonCalls) {
             }
         ]
     })
-    jcall.steps.set("lampToggleWithVariables", {
+    jcall.userActions.set("lampToggleWithVariables", {
         icon: "light",
         color: "blue",
         category: "test",
@@ -112,7 +112,7 @@ export function register(jcall: JsonCalls) {
             }
         ]
     })
-    jcall.steps.set("lampTest", {
+    jcall.userActions.set("lampTest", {
         icon: "light",
         color: "violet",
         category: "test",
