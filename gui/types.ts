@@ -1,8 +1,7 @@
+import { CallParameters, ColorType } from "../json-calls-protocol/spec.ts";
+
 export type ActionType = "full" | "full.focus" | "normal" | "small" | "small.light";
-export type ColorType = "red" | "red-orange" | "orange" | "yellow" | "green" | "green-blue" | "blue" | "blue-violet" | "violet" | "violet-pink" | "pink" | "gray" | "steel" | "brown"
-export type TitleType = (string | {
-    type: "button";
-})[];
+export type TitleType = (string | CallParameters)[];
 
 export type ActionState = {
     icon: string,
@@ -10,7 +9,10 @@ export type ActionState = {
     type: ActionType,
     title: TitleType
 } | "searchtab";
+
+export type TabEntry = number | "search-tab";
+
 export type State = {
     selectedTab: number,
-    tabs: ActionState[]
+    tabs: TabEntry[]
 };

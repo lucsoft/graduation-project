@@ -38,6 +38,7 @@
 }
 
 .color-violet {
+    color: white;
     background: var(--overlay-color) rgb(117 67 173);
 }
 

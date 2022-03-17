@@ -42,6 +42,10 @@
 
 }
 
+.action.full.focus {
+    box-shadow: 0 0 5px 1px rgba(0, 0, 0, 0.05);
+}
+
 .action.full.focus .action-icon {
     width: 36.66px;
     height: 36.66px;
@@ -107,6 +111,7 @@ Action Normal
 
 .action.normal {
     height: 36px;
+    box-shadow: 0px 0px 5px 1px rgba(0, 0, 0, 0.05);
 }
 
 .action.normal .title {
