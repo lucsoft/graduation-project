@@ -46,7 +46,7 @@ export function register(jcall: JsonCalls) {
     jcall.steps.set("lampToggle", {
         icon: "light",
         category: "test",
-        displayText: "Flips the Lamp",
+        displayText: "Flips the lamp",
         color: "yellow",
         actions: [
             {
@@ -54,7 +54,7 @@ export function register(jcall: JsonCalls) {
             },
             {
                 id: "buildIn.if",
-                paramter: [ { type: "boolean", name: "value", value: { type: "response", id: 1 } } ],
+                paramter: [ { type: "boolean", name: "value", value: { type: "response", id: 0 } } ],
                 condition: { id: "buildIn.truthy" },
                 branch: {
                     true: [ { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: false } ] } ],
@@ -80,7 +80,10 @@ export function register(jcall: JsonCalls) {
             },
             {
                 id: "buildIn.variable",
-                paramter: [ { type: "boolean", name: "value", value: { type: "response", id: 0 } } ]
+                paramter: [
+                    { type: "number", name: "source", value: { type: "response", id: 0 } },
+                    { type: "string", name: "target", value: "state" }
+                ]
             },
             {
                 id: "buildIn.if",
@@ -119,10 +122,4 @@ export function register(jcall: JsonCalls) {
             },
         ]
     })
-    new Array(10).fill(1).forEach((_, i) => jcall.steps.set("counte" + i, {
-        actions: [],
-        category: "test",
-        color: "gray",
-        icon: "close"
-    }))
 }
