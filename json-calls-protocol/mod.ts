@@ -18,6 +18,7 @@ export class JsonCalls {
 
     async singleRun({ id, paramter, branch, condition }: CallStep, state: StateType): Promise<void> {
         state._counter++;
+        state._callsLeft--;
         console.log(`%cRun@JsonCalls: ${id} \t${Deno.inspect(state)} ${Deno.inspect(paramter)}`, "color: gray");
         if (!id.includes(".")) throw new Error();
         const [ type, stepID ] = id.split(".");
@@ -60,6 +61,7 @@ export class JsonCalls {
                     await this.singleRun({ ...condition, paramter: paramter }, state);
                     const getter = state._responses.get(state._counter);
                     if (getter == null) throw new Error();
+                    state._callsLeft -= (!getter ? branch.true : branch.false).map(x => this.getSizeInCall(x)).reduce((partialSum, a) => partialSum + a.length, 0);
                     for (const iterator of getter ? branch.true : branch.false) {
                         await this.singleRun(iterator, state)
                     }
@@ -92,7 +94,18 @@ export class JsonCalls {
         else
             return data;
     }
-
+    getSizeInCall(id: CallStep): unknown[] {
+        const list: unknown[] = [ 1 ];
+        if(id.condition) list.push(...this.getSizeInCall(id.condition));
+        if(id.branch) list.push(...Object.values(id.branch).map(x => x.map(x => this.getSizeInCall(x).flat())).flat());
+        return list.filter(x => x);
+    }
+    getSize(id: CallStepId): number {
+        const [ _, stepId ] = id.split(".");
+        const step = this.steps.get(stepId);
+        if(step?.actions == "native") return 1;
+        return step?.actions.map(x => this.getSizeInCall(x)).flat().length ?? -1;
+    }
     streamRun(id: CallStepId) {
         console.log(`%cStreamRun@JsonCalls: ${id}`, "color: gray");
         if (!id.startsWith("step.")) throw new Error("Not starting with step.");
@@ -102,6 +115,7 @@ export class JsonCalls {
         const state = {
             ...step.variables ?? {},
             _counter: -1,
+            _callsLeft: this.getSize(id),
             _responses: new Map<number, any>(),
         }
         return new ReadableStream<StateType>({

@@ -6,7 +6,7 @@ export function registerMetaData(buildIn: Map<string, Step>) {
     buildIn.set("truthy", {
         actions: "native",
         color: "green",
-        category: "hide",
+        category: "conditions",
         icon: "done",
         displayText: "ist positiv"
     })

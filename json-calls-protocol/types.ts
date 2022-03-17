@@ -1,5 +1,5 @@
 // deno-lint-ignore no-explicit-any
-export type StateType = Record<string, string | boolean | number | Map<number, any>> & { _counter: number, _responses: Map<number, any> };
+export type StateType = Record<string, string | boolean | number | Map<number, any>> & { _callsLeft: number,_counter: number, _responses: Map<number, any> };
 
 export type ParamterWithData = Record<string, (
     | { type: "number", value: number }
