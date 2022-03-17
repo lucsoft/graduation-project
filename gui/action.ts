@@ -1,11 +1,11 @@
 import './style/actions.css';
 import { Component, Card, headless, Horizontal, Icon, Spacer, Vertical } from "../../WebGen/mod.ts";
 import { ActionType } from "./types.ts";
-import { Step } from "../json-calls-protocol/spec.ts";
+import { Action } from "../json-calls-protocol/spec.ts";
 import { renderRichTitle } from "./richAction.ts";
 
 
-export function SimpleAction({ icon, color, displayText }: Step, type: ActionType, closeable = true, actions: Component[] = []) {
+export function SimpleAction({ icon, color, displayText }: Action, type: ActionType, closeable = true, actions: Component[] = []) {
     return Card(headless(
         Horizontal(
             icon ? Icon(icon)

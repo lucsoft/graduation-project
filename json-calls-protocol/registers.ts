@@ -1,31 +1,31 @@
-import { Step } from "./spec.ts";
+import { Action } from "./spec.ts";
 export function registerMetaCategory(category: Map<string, { de: string, en: string }>) {
     category.set("script", { de: "Skripte", en: "Scripts" });
 }
-export function registerMetaData(buildIn: Map<string, Step>) {
+export function registerMetaData(buildIn: Map<string, Action>) {
     buildIn.set("truthy", {
-        actions: "native",
+        steps: "native",
         color: "green",
         category: "conditions",
         icon: "done",
         displayText: "ist positiv"
     })
     buildIn.set("falsy", {
-        actions: "native",
+        steps: "native",
         color: "red",
         category: "conditions",
         icon: "close",
         displayText: "ist negativ"
     })
     buildIn.set("text", {
-        actions: "native",
+        steps: "native",
         color: "yellow",
         category: "system",
         icon: "notes",
         displayText: "Text"
     })
     buildIn.set("if", {
-        actions: "native",
+        steps: "native",
         color: "gray",
         category: "script",
         displayText: "Wenn",
@@ -36,7 +36,7 @@ export function registerMetaData(buildIn: Map<string, Step>) {
         }
     })
     buildIn.set("retry", {
-        actions: "native",
+        steps: "native",
         color: "gray",
         category: "script",
         icon: "sync_problem",
@@ -44,13 +44,13 @@ export function registerMetaData(buildIn: Map<string, Step>) {
     })
     buildIn.set("repeatWith", {
         displayText: "Durchlaufen*",
-        actions: "native",
+        steps: "native",
         category: "script",
         color: "gray",
         icon: "data_array"
     })
     buildIn.set("repeat", {
-        actions: "native",
+        steps: "native",
         color: "gray",
         category: "script",
         inlineText: {
@@ -61,7 +61,7 @@ export function registerMetaData(buildIn: Map<string, Step>) {
         displayText: "Wiederholen*"
     })
     buildIn.set("sleep", {
-        actions: "native",
+        steps: "native",
         color: "gray",
         category: "script",
         inlineText: {
@@ -79,7 +79,7 @@ export function registerMetaData(buildIn: Map<string, Step>) {
         ]
     })
     buildIn.set("variable", {
-        actions: "native",
+        steps: "native",
         color: "orange",
         category: "script",
         displayText: "Zu Variable hinzufügen",
@@ -94,7 +94,7 @@ export function registerMetaData(buildIn: Map<string, Step>) {
         }
     })
     buildIn.set("comment", {
-        actions: "native",
+        steps: "native",
         color: "gray",
         category: "system",
         icon: "notes",

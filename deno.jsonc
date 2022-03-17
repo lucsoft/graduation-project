@@ -14,6 +14,6 @@
     },
     "tasks": {
         "gui": "deno run -A --unstable --no-check gui/serve.ts",
-        "jcall": "deno run json-calls-protocol/test.ts"
+        "jcall": "deno run --watch json-calls-protocol/test.ts"
     }
 }

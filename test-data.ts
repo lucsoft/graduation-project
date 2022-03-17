@@ -23,7 +23,7 @@ export function register(jcall: JsonCalls) {
         },
         icon: "lightbulb",
         displayText: "Licht abrufen",
-        actions: "native"
+        steps: "native"
     });
     jcall.nativeActions.set("lamp", {
         color: "yellow",
@@ -34,7 +34,7 @@ export function register(jcall: JsonCalls) {
         },
         icon: "lightbulb",
         displayText: "Licht konfigurieren",
-        actions: "native",
+        steps: "native",
         parameters: [
             {
                 name: "value",
@@ -48,13 +48,13 @@ export function register(jcall: JsonCalls) {
         category: "test",
         displayText: "Branching Test",
         color: "yellow",
-        actions: [
+        steps: [
             {
                 id: "native.getLamp"
             },
             {
                 id: "buildIn.if",
-                paramter: [ { type: "boolean", name: "value", value: { type: "response", id: 0 } } ],
+                paramter: [ { type: "boolean", name: "value", value: { type: "response", id: "0" } } ],
                 condition: { id: "buildIn.truthy" },
                 branch: {
                     true: [
@@ -87,7 +87,7 @@ export function register(jcall: JsonCalls) {
         variables: {
             state: false
         },
-        actions: [
+        steps: [
             {
                 id: "native.lamp",
                 paramter: [
@@ -97,7 +97,7 @@ export function register(jcall: JsonCalls) {
             {
                 id: "buildIn.variable",
                 paramter: [
-                    { type: "number", name: "source", value: { type: "response", id: 0 } },
+                    { type: "number", name: "source", value: { type: "response", id: "0" } },
                     { type: "string", name: "target", value: "state" }
                 ]
             },
@@ -117,7 +117,7 @@ export function register(jcall: JsonCalls) {
         color: "violet",
         category: "test",
         displayText: "Blinken",
-        actions: [
+        steps: [
             {
                 id: "native.lamp",
                 paramter: [

@@ -8,6 +8,7 @@ import './style/sidepanel.css';
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
 import { register } from "../test-data.ts";
 import { streamAsyncIterable } from "../json-calls-protocol/polyfill.ts";
+import { ActionId } from "../json-calls-protocol/spec.ts";
 
 WebGen({
     theme: SupportedThemes.light,
@@ -49,10 +50,10 @@ ViewState.unsafeViewOptions().update({
     selectedTab: 0,
     tabs: defaultTabs
 });
-async function startProcess(id: string) {
+async function startProcess(id: ActionId) {
     let state = ViewState.unsafeViewOptions();
     state.update({ runner: { ...state.state.runner, [ id ]: [] } });
-    for await (const response of streamAsyncIterable(jcall.streamRun(`user.${id}`))) {
+    for await (const response of streamAsyncIterable(jcall.streamRun(id))) {
         const state = ViewState.unsafeViewOptions();
         state.update({ runner: { ...state.state.runner, [ id ]: [ ...(state.state.runner?.[ id ] ?? []), response ] } });
         console.log(response)
@@ -71,7 +72,7 @@ function renderNavigationEntry(state: Partial<State>, update: (data: Partial<Sta
         const progress = Custom(div).addClass("progressbar")
         if (entry == "search-tab") element = Card(headless(PlainText("Search"))).addClass("action", "full");
         else {
-            const step = jcall.getStepFromIndex(entry)!;
+            const step = jcall.traceform(jcall.getStepFromIndex(entry)!);
             const stepId = jcall.getStepIdFromIndex(entry);
             const exec = stepId ? state.runner?.[ stepId ] : undefined;
             if (exec) {

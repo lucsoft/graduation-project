@@ -1,11 +1,11 @@
 // deno-lint-ignore-file no-explicit-any
 import { registerMetaCategory, registerMetaData } from "./registers.ts";
 import { JResponse, ParamterWithData } from "./types.ts";
-import { CallParameters, CallStep, ActionId, Source, Step, State } from "./spec.ts";
+import { CallParameters, CallStep, ActionId, Source, Action, State, Trace } from "./spec.ts";
 export class JsonCalls {
-    nativeActions = new Map<string, Step>();
-    buildInActions = new Map<string, Step>();
-    userActions = new Map<string, Step>();
+    nativeActions = new Map<string, Action>();
+    buildInActions = new Map<string, Action>();
+    userActions = new Map<string, Action>();
 
     methodProvider = new Map<string, ((parameters: ParamterWithData) => JResponse | Promise<JResponse>)>();
     category = new Map<string, { de: string, en: string }>();
@@ -16,10 +16,11 @@ export class JsonCalls {
         registerMetaData(this.buildInActions);
     }
 
-    async singleRun(controller: ReadableStreamController<State>, { id, paramter, branch, condition }: CallStep, state: State): Promise<void> {
-        state._counter++;
+    async singleRun(controller: ReadableStreamController<State>, { id, paramter, branch, condition, trace }: CallStep, state: State): Promise<void> {
+        state._trace = trace!;
         state._callsLeft--;
         controller.enqueue({ ...state });
+        await new Promise(done => setTimeout(done, 80)) // For Demo purpose
         if (!id.includes(".")) throw new Error();
         const [ type, stepID ] = id.split(".");
         if (type == "native") {
@@ -30,7 +31,7 @@ export class JsonCalls {
             if (privoder == undefined) throw new Error(`Can't find step '${stepID}'`);
             const action = privoder(data);
             if (action === null) throw new Error(`${stepID} failed with null!`);
-            state._responses.set(state._counter, await action);
+            state._responses.set(state._trace, await action);
             return;
         }
         if (type == "buildIn") {
@@ -47,22 +48,22 @@ export class JsonCalls {
                     const paras = this.getParamters(paramter, state);
                     const list = paramter.map(x => paras[ x.name ]) as (CallParameters | undefined | null)[]
                     if (list.includes(undefined) || list.includes(null)) throw new Error();
-                    state._responses.set(state._counter, list.map((x) => state[ x!.name ] = x!.value as unknown as string)[ 0 ]);
+                    state._responses.set(state._trace, list.map((x) => state[ x!.name ] = x!.value as unknown as string)[ 0 ]);
                     return;
                 }
                 case "truthy": {
                     const rsp = this.getParamters(paramter, state).value.value;
-                    state._responses.set(state._counter, !!rsp);
+                    state._responses.set(state._trace, !!rsp);
                     return;
                 }
                 case "falsy": {
                     const rsp = this.getParamters(paramter, state).value.value;
-                    state._responses.set(state._counter, !rsp);
+                    state._responses.set(state._trace, !rsp);
                     return;
                 } case "if": {
                     if (branch === undefined || condition === undefined) throw new Error();
                     await this.singleRun(controller, { ...condition, paramter: paramter }, state);
-                    const getter = state._responses.get(state._counter);
+                    const getter = state._responses.get(state._trace);
                     if (getter == null) throw new Error();
                     state._callsLeft -= (!getter ? branch.true : branch.false).map(x => this.getSizeInCall(x)).reduce((partialSum, a) => partialSum + a.length, 0);
                     for (const iterator of getter ? branch.true : branch.false) {
@@ -80,7 +81,11 @@ export class JsonCalls {
     getParamters(data: CallParameters[] | undefined, state: State): ParamterWithData {
         return data ? Object.fromEntries(data.map(({ name, type, value, hint }) => [ name, { type, value: this.getDataFromSource(value, state), hint } ])) : {};
     }
-
+    find(data: "native" | CallStep[] | undefined, trace: Trace): undefined | CallStep {
+        if (typeof data === "string") return undefined;
+        if (!data) return undefined;
+        return data.find(x => x.trace === trace) ?? undefined;
+    }
     getDataFromSource(data: string | number | boolean | Source | undefined, state: State) {
         if (typeof data === "object")
             switch (data.type) {
@@ -106,23 +111,23 @@ export class JsonCalls {
     getSize(id: ActionId): number {
         const [ _, stepId ] = id.split(".");
         const step = this.userActions.get(stepId);
-        if (step?.actions == "native") return 1;
-        return step?.actions.map(x => this.getSizeInCall(x)).flat().length ?? -1;
+        if (step?.steps == "native") return 1;
+        return step?.steps.map(x => this.getSizeInCall(x)).flat().length ?? -1;
     }
     streamRun(id: ActionId) {
         if (!id.startsWith("user.")) throw new Error("Not starting with user.");
         const [ _, stepId ] = id.split(".");
         const step = this.userActions.get(stepId);
-        if (step === undefined || step.actions === undefined || step.actions === "native") throw new Error("invalid data")
+        if (step === undefined || step.steps === undefined || step.steps === "native") throw new Error(stepId + "invalid data")
         const state = {
             ...step.variables ?? {},
-            _counter: -1,
+            _trace: "",
             _callsLeft: this.getSize(id),
-            _responses: new Map<number, any>(),
-        }
+            _responses: new Map<Trace, any>(),
+        } as State;
         return new ReadableStream<State>({
             start: async (controller) => {
-                for (const iterator of step.actions) {
+                for (const iterator of this.traceform(step).steps) {
                     if (typeof iterator === "string") return controller.error("Failed");
                     await this.singleRun(controller, iterator, state);
                 }
@@ -130,10 +135,45 @@ export class JsonCalls {
             }
         }, { highWaterMark: 0 })
     }
-    getMetaDataFromId(id: string) {
-        return this.getStepMapFromType(id)?.get(id.split('.')[ 1 ])
+
+    traceform(data: Action) {
+        if (typeof data.steps == "string") throw new Error("Cannot tracefrom a native Action");
+        const recusion = (layer: string, steps: CallStep[], offset = 0) => {
+            for (let index = 0; index < steps.length; index++) {
+                const element = steps[ index ];
+                if (typeof element == "string") continue;
+                element.trace = layer + (index + offset).toString();
+                recusion(element.trace + ".", [ element.condition! ].filter(x => x))
+                if (element.branch) {
+                    const branches = Object.values(element.branch);
+                    for (let innerIndex = 0; innerIndex < branches.length; innerIndex++) {
+                        const innerElement = branches[ innerIndex ];
+                        recusion(element.trace + "." + (element.condition ? innerIndex + 1 : innerIndex) + ".", innerElement, innerIndex + 1);
+                    }
+                }
+            }
+        }
+        recusion("", data.steps);
+        return data;
     }
-    getStepMapFromType(type: string) {
+
+    meta(step?: CallStep): Action | undefined {
+        return step ? this.metaFromId(step.id) : undefined;
+    }
+    metaFromId(id: ActionId) {
+        return this.#getStepMapFromType(id)?.get(id.split('.')[ 1 ])
+    }
+    getStepFromIndex(index: number): Action | null {
+        return Array.from(this.userActions.values())[ index ];
+    }
+    getStepIdFromIndex(index: number): ActionId | null {
+        const step = Array.from(this.userActions.keys())[ index ];
+        return step ? `user.${step}` : null;
+    }
+
+    // Private Methods
+
+    #getStepMapFromType(type: string) {
         switch (type.split('.')[ 0 ]) {
             case "buildIn":
                 return this.buildInActions;
@@ -142,11 +182,5 @@ export class JsonCalls {
             case "user":
                 return this.userActions;
         }
-    }
-    getStepFromIndex(index: number): Step | null {
-        return Array.from(this.userActions.values())[ index ];
-    }
-    getStepIdFromIndex(index: number): string | null {
-        return Array.from(this.userActions.keys())[ index ];
     }
 }

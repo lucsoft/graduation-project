@@ -9,7 +9,7 @@ export const exampleOne: JsonCallsProtocol = {
             en: "Test"
         }
     },
-    steps: {
+    actions: {
         "native.lamp": {
             parameters: [
                 {
@@ -17,7 +17,7 @@ export const exampleOne: JsonCallsProtocol = {
                     type: "boolean"
                 }
             ],
-            actions: "native",
+            steps: "native",
             category: "test",
             icon: "native",
             color: "gray"
@@ -27,7 +27,7 @@ export const exampleOne: JsonCallsProtocol = {
             color: "blue",
             category: undefined,
             displayText: "Blinks the lamp",
-            actions: [
+            steps: [
                 {
                     id: "native.lamp",
                     paramter: [
@@ -56,7 +56,7 @@ export const exampleOne: JsonCallsProtocol = {
             variables: {
                 state: false
             },
-            actions: [
+            steps: [
                 {
                     id: "native.lamp",
                     paramter: [
@@ -65,7 +65,7 @@ export const exampleOne: JsonCallsProtocol = {
                 },
                 {
                     id: "buildIn.variable",
-                    paramter: [ { type: "boolean", name: "state", value: { type: "response", id: 0 } } ]
+                    paramter: [ { type: "boolean", name: "state", value: { type: "response", id: "0" } } ]
                 },
                 {
                     id: "buildIn.if",
@@ -83,14 +83,14 @@ export const exampleOne: JsonCallsProtocol = {
             color: "blue",
             category: undefined,
             displayText: "Toggles the lamp",
-            actions: [
+            steps: [
                 {
                     id: "native.lamp",
                     paramter: [ { type: "boolean", name: "state" } ]
                 },
                 {
                     id: "buildIn.if",
-                    paramter: [ { type: "boolean", name: "state", value: { type: "response", id: 1 } } ],
+                    paramter: [ { type: "boolean", name: "state", value: { type: "response", id: "1" } } ],
                     condition: { id: "buildIn.truthy" },
                     branch: {
                         true: [ { id: "native.lamp", paramter: [ { type: "boolean", value: false, name: "value" } ] } ],
@@ -105,7 +105,7 @@ export const exampleOne: JsonCallsProtocol = {
                 },
                 {
                     id: "buildIn.if",
-                    paramter: [ { type: "boolean", name: "state", value: { type: "response", id: 5 } } ],
+                    paramter: [ { type: "boolean", name: "state", value: { type: "response", id: "5" } } ],
                     condition: { id: "buildIn.truthy" },
                     branch: {
                         true: [ { id: "native.lamp", paramter: [ { type: "boolean", value: false, name: "value" } ] } ],
