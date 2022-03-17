@@ -1,5 +1,6 @@
 import { Webview } from "https://raw.githubusercontent.com/webview/webview_deno/main/mod.ts";
 
+// @ts-ignore All correct here
 new Worker(new URL("./worker.ts", import.meta.url).href, { deno: true, type: "module" })
 const view = new Webview(900, 600);
 view.title = "Proof of Concept";
