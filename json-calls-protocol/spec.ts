@@ -2,7 +2,7 @@
 export type Source = { type: "variable", id: string } | { type: "response", id: number } | { type: "paramter", id: string };
 export type Variable = Record<string, string | boolean | number>;
 export type ColorType = "red" | "red-orange" | "orange" | "yellow" | "green" | "green-blue" | "blue" | "blue-violet" | "violet" | "violet-pink" | "pink" | "gray" | "steel" | "brown"
-
+export type State = Record<string, string | boolean | number | Map<number, any>> & { _callsLeft: number, _counter: number, _responses: Map<number, any> };
 export type CallStepId = `${"step" | "native" | "buildIn"}.${string}`;
 export type CallHints = "count" | "secounds" | "power" | "lock" | "value";
 export type CallParameters =
