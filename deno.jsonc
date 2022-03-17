@@ -11,5 +11,9 @@
         "options": {
             "indentWidth": 4
         }
+    },
+    "tasks": {
+        "gui": "deno run -A --unstable --no-check gui/serve.ts",
+        "jcall": "deno run json-calls-protocol/test.ts"
     }
 }

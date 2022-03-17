@@ -1,8 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { registerMetaCategory, registerMetaData } from "./registers.ts";
-import { JResponse, ParamterWithData, StateType } from "./types.ts";
-import { CallParameters, CallStep, CallStepId, Source, Step } from "./spec.ts";
-
+import { JResponse, ParamterWithData } from "./types.ts";
+import { CallParameters, CallStep, CallStepId, Source, Step, State } from "./spec.ts";
 export class JsonCalls {
     methodProvider = new Map<string, ((parameters: ParamterWithData) => JResponse | Promise<JResponse>)>();
     native = new Map<string, Step>();
@@ -16,10 +15,10 @@ export class JsonCalls {
         registerMetaData(this.buildIn);
     }
 
-    async singleRun({ id, paramter, branch, condition }: CallStep, state: StateType): Promise<void> {
+    async singleRun(controller: ReadableStreamController<State>, { id, paramter, branch, condition }: CallStep, state: State): Promise<void> {
         state._counter++;
         state._callsLeft--;
-        console.log(`%cRun@JsonCalls: ${id} \t${Deno.inspect(state)} ${Deno.inspect(paramter)}`, "color: gray");
+        controller.enqueue({ ...state });
         if (!id.includes(".")) throw new Error();
         const [ type, stepID ] = id.split(".");
         if (type == "native") {
@@ -37,9 +36,12 @@ export class JsonCalls {
             if (paramter === undefined) throw new Error();
             // TODO: Move this methodProvider
             switch (stepID) {
-                case "sleep":
-                    await new Promise<void>(done => setTimeout(() => done(), this.getParamters(paramter, state).amount.value as number))
+                case "sleep": {
+                    const param = this.getParamters(paramter, state).amount.value;
+                    if (typeof param != "number") throw new Error("failed");
+                    await new Promise<void>(done => setTimeout(() => done(), param * 1000))
                     return;
+                }
                 case "variable": {
                     const paras = this.getParamters(paramter, state);
                     const list = paramter.map(x => paras[ x.name ]) as (CallParameters | undefined | null)[]
@@ -58,12 +60,12 @@ export class JsonCalls {
                     return;
                 } case "if": {
                     if (branch === undefined || condition === undefined) throw new Error();
-                    await this.singleRun({ ...condition, paramter: paramter }, state);
+                    await this.singleRun(controller, { ...condition, paramter: paramter }, state);
                     const getter = state._responses.get(state._counter);
                     if (getter == null) throw new Error();
                     state._callsLeft -= (!getter ? branch.true : branch.false).map(x => this.getSizeInCall(x)).reduce((partialSum, a) => partialSum + a.length, 0);
                     for (const iterator of getter ? branch.true : branch.false) {
-                        await this.singleRun(iterator, state)
+                        await this.singleRun(controller, iterator, state)
                     }
                     return;
                 }
@@ -74,11 +76,11 @@ export class JsonCalls {
         throw new Error();
     }
 
-    getParamters(data: CallParameters[] | undefined, state: StateType): ParamterWithData {
+    getParamters(data: CallParameters[] | undefined, state: State): ParamterWithData {
         return data ? Object.fromEntries(data.map(({ name, type, value, hint }) => [ name, { type, value: this.getDataFromSource(value, state), hint } ])) : {};
     }
 
-    getDataFromSource(data: string | number | boolean | Source | undefined, state: StateType) {
+    getDataFromSource(data: string | number | boolean | Source | undefined, state: State) {
         if (typeof data === "object")
             switch (data.type) {
                 case "variable":
@@ -96,18 +98,17 @@ export class JsonCalls {
     }
     getSizeInCall(id: CallStep): unknown[] {
         const list: unknown[] = [ 1 ];
-        if(id.condition) list.push(...this.getSizeInCall(id.condition));
-        if(id.branch) list.push(...Object.values(id.branch).map(x => x.map(x => this.getSizeInCall(x).flat())).flat());
+        if (id.condition) list.push(...this.getSizeInCall(id.condition));
+        if (id.branch) list.push(...Object.values(id.branch).map(x => x.map(x => this.getSizeInCall(x).flat())).flat());
         return list.filter(x => x);
     }
     getSize(id: CallStepId): number {
         const [ _, stepId ] = id.split(".");
         const step = this.steps.get(stepId);
-        if(step?.actions == "native") return 1;
+        if (step?.actions == "native") return 1;
         return step?.actions.map(x => this.getSizeInCall(x)).flat().length ?? -1;
     }
     streamRun(id: CallStepId) {
-        console.log(`%cStreamRun@JsonCalls: ${id}`, "color: gray");
         if (!id.startsWith("step.")) throw new Error("Not starting with step.");
         const [ _, stepId ] = id.split(".");
         const step = this.steps.get(stepId);
@@ -118,16 +119,15 @@ export class JsonCalls {
             _callsLeft: this.getSize(id),
             _responses: new Map<number, any>(),
         }
-        return new ReadableStream<StateType>({
+        return new ReadableStream<State>({
             start: async (controller) => {
                 for (const iterator of step.actions) {
                     if (typeof iterator === "string") return controller.error("Failed");
-                    await this.singleRun(iterator, state);
-                    controller.enqueue({ ...state });
+                    await this.singleRun(controller, iterator, state);
                 }
                 controller.close()
             }
-        })
+        }, { highWaterMark: 0 })
     }
     getMetaDataFromId(id: string) {
         return this.getStepMapFromType(id)?.get(id.split('.')[ 1 ])
@@ -144,5 +144,8 @@ export class JsonCalls {
     }
     getStepFromIndex(index: number): Step | null {
         return Array.from(this.steps.values())[ index ];
+    }
+    getStepIdFromIndex(index: number): string | null {
+        return Array.from(this.steps.keys())[ index ];
     }
 }
