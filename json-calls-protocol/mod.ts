@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { registerMetaCategory, registerMetaData } from "./registers.ts";
 import { JResponse, ParamterWithData, StateType } from "./types.ts";
-import { buildInIds, CallParameters, CallStep, CallStepId, Source, Step } from "./spec.ts";
+import { CallParameters, CallStep, CallStepId, Source, Step } from "./spec.ts";
 
 export class JsonCalls {
     methodProvider = new Map<string, ((parameters: ParamterWithData) => JResponse | Promise<JResponse>)>();
@@ -9,6 +9,7 @@ export class JsonCalls {
     buildIn = new Map<string, Step>();
     steps = new Map<string, Step>();
     category = new Map<string, { de: string, en: string }>();
+    language: "de" | "en" = "de";
 
     constructor() {
         registerMetaCategory(this.category);
@@ -34,7 +35,7 @@ export class JsonCalls {
         if (type == "buildIn") {
             if (paramter === undefined) throw new Error();
             // TODO: Move this methodProvider
-            switch (stepID as buildInIds) {
+            switch (stepID) {
                 case "sleep":
                     await new Promise<void>(done => setTimeout(() => done(), this.getParamters(paramter, state).amount.value as number))
                     return;
@@ -72,7 +73,7 @@ export class JsonCalls {
     }
 
     getParamters(data: CallParameters[] | undefined, state: StateType): ParamterWithData {
-        return data ? Object.fromEntries(data.map(({ name, type, value }) => [ name, { type, value: this.getDataFromSource(value, state) } ])) : {};
+        return data ? Object.fromEntries(data.map(({ name, type, value, hint }) => [ name, { type, value: this.getDataFromSource(value, state), hint } ])) : {};
     }
 
     getDataFromSource(data: string | number | boolean | Source | undefined, state: StateType) {
@@ -100,7 +101,7 @@ export class JsonCalls {
         if (step === undefined || step.actions === undefined || step.actions === "native") throw new Error("invalid data")
         const state = {
             ...step.variables ?? {},
-            _counter: 0,
+            _counter: -1,
             _responses: new Map<number, any>(),
         }
         return new ReadableStream<StateType>({
@@ -114,8 +115,11 @@ export class JsonCalls {
             }
         })
     }
+    getMetaDataFromId(id: string) {
+        return this.getStepMapFromType(id)?.get(id.split('.')[ 1 ])
+    }
     getStepMapFromType(type: string) {
-        switch (type) {
+        switch (type.split('.')[ 0 ]) {
             case "buildIn":
                 return this.buildIn;
             case "native":
