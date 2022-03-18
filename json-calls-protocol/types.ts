@@ -7,7 +7,7 @@ export type ParamterWithData = Record<string, (
     | { type: "array", value: unknown[] }
 )>;
 
-export type JResponse = number | boolean | string | null | undefined;
+export type JResponse = number | boolean | string | null | unknown[] | undefined;
 
 export type ProviderType = (parameters: ParamterWithData, ref: {
     state: State;

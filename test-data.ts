@@ -8,6 +8,7 @@ export function register(jcall: JsonCalls) {
         en: "Test"
     });
     jcall.provider.set("native.getLamp", () => lampState);
+    jcall.provider.set("native.devices", () => [ "lamp" ]);
     jcall.provider.set("native.lamp", ({ value }) => {
         if (value.type !== "boolean" || !Object.hasOwn(value, "value")) return null;
         console.log("LAMP", lampState, value.value);
@@ -28,6 +29,16 @@ export function register(jcall: JsonCalls) {
         },
         steps: "native"
     });
+    jcall.nativeActions.set("devices", {
+        color: "blue",
+        category: "test",
+        icon: "devices_other",
+        steps: "native",
+        displayText: {
+            de: "Geräte abrufen",
+            en: "Get Devices"
+        }
+    })
     jcall.nativeActions.set("lamp", {
         color: "yellow",
         category: "test",
@@ -55,26 +66,47 @@ export function register(jcall: JsonCalls) {
         category: "test",
         steps: [
             {
-                id: "buildIn.repeat",
-                paramter: [
-                    { type: "number", name: "count", value: 5 }
-                ],
+                id: "native.getLamp"
+            },
+            {
+                id: "native.devices"
+            },
+            {
+                id: "buildIn.if",
+                paramter: [ { type: "boolean", name: "value", value: { type: "response", id: "0" } } ],
+                condition: { id: "buildIn.falsy" },
                 branch: {
-                    repeating: [
-                        { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: true } ] },
+                    true: [
                         {
-                            id: "buildIn.sleep",
+                            id: "buildIn.repeat",
                             paramter: [
-                                { name: "amount", type: "number", value: 0.5 }
-                            ]
+                                { type: "number", name: "count", value: 5 }
+                            ],
+                            branch: {
+                                repeating: [
+                                    { id: "user.lampTest" }
+                                ]
+                            }
                         },
-                        { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: false } ] },
+                        { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: true } ] }
+                    ],
+                    false: [
                         {
-                            id: "buildIn.sleep",
+                            id: "buildIn.try",
                             paramter: [
-                                { name: "amount", type: "number", value: 0.5 }
-                            ]
-                        }
+                                {
+                                    name: "tries",
+                                    type: "number",
+                                    value: 3
+                                }
+                            ],
+                            branch: {
+                                try: [
+                                    { id: "user.lampTest" }
+                                ]
+                            }
+                        },
+                        { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: false } ] }
                     ]
                 }
             }
@@ -164,7 +196,7 @@ export function register(jcall: JsonCalls) {
             {
                 id: "buildIn.sleep",
                 paramter: [
-                    { name: "amount", type: "number", value: 5 }
+                    { name: "amount", type: "number", value: 2 }
                 ]
             },
             {

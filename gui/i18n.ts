@@ -3,9 +3,13 @@ const language: Language = "de";
 export const translation = {
     "unknown": { de: "Unbenannt", en: "Unknown" },
     "buildIn.if.false": { de: "Sonst", en: "Else" },
-    "hint.secounds": { de: "Sekunden", en: "Secounds" },
-    "hint.secound": { de: "Sekunde", en: "Secound" },
-    "buildIn.if.end": { de: `'Ende von "Wenn"'`, en: "End of 'When'" },
+    "hint.values": { de: "", en: "" },
+    "hint.secounds": { de: " Sekunden", en: " Secounds" },
+    "hint.secound": { de: " Sekunde", en: " Secound" },
+    "hint.counts": { de: "-mal", en: " times" },
+    "hint.count": { de: "-mal", en: " time" },
+    "hint.power.true": { de: "An", en: "On" },
+    "hint.power.false": { de: "Aus", en: "Off" }
 }
 export function choose<Type>(data?: Record<Language, Type>): Type | undefined {
     return data?.[ language ];

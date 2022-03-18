@@ -22,7 +22,7 @@ html {
 }
 
 .container {
-    height: calc(100vh - 55px - 30px);
+    min-height: calc(100vh - 55px - 30px);
     overflow: hidden;
 }
 

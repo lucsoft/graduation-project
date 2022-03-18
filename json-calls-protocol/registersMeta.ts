@@ -86,6 +86,24 @@ export function registerMetaData(buildIn: Map<string, Action>) {
         displayText: {
             de: "Versuchen",
             en: "Try"
+        },
+        inlineText: {
+            de: [ "Ausführen mit", 0, "versuchen" ],
+            en: [ "Execute with", 0, "tries" ]
+        },
+        parameters: [
+            {
+                name: "tries",
+                type: "number",
+                hint: "value"
+            }
+        ],
+        branch: {
+            hideFirstStep: true,
+            endBlock: {
+                de: 'Ende von "Versuchen"',
+                en: 'End of "Try"'
+            }
         }
     })
     buildIn.set("repeatWith", {

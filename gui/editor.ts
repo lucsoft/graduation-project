@@ -1,15 +1,15 @@
 import { Button, ButtonStyle, Card, Color, Component, Grid, headless, Horizontal, Input, PlainText, Spacer, Vertical } from "../../WebGen/mod.ts";
+import { toFirstUpperCase } from "../helper.ts";
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
 import { ActionId, CallStep } from "../json-calls-protocol/spec.ts";
 import { SimpleAction } from "./action.ts";
-import { translate } from "./i18n.ts";
+import { choose, translate } from "./i18n.ts";
 import { RichAction } from "./richAction.ts";
 import { State } from "./types.ts";
 
 export const EditorView = (jcall: JsonCalls, state: Partial<State>, _update: (data: Partial<State>) => void) => {
-    const ActionUnion = jcall.getUserActionIndex(state.tabs?.[ state.selectedTab ?? 0 ] as number);
-    if (!ActionUnion) return null;
-    const [ ActionId, Action ] = ActionUnion;
+    const Action = jcall.getUserActionIndex(state.tabs?.[ state.selectedTab ?? 0 ] as number);
+    if (!Action) return null;
     return Horizontal(
         Card(headless(
             Vertical(
@@ -65,10 +65,10 @@ export const EditorView = (jcall: JsonCalls, state: Partial<State>, _update: (da
             .setDirection("column")
             .setAlign("stretch"),
         Spacer(),
-        Action.steps === "native"
+        Action[ 1 ].steps === "native"
             ? PlainText("Can't edit a Native Action")
             : Vertical(
-                ...Action.steps.map(x => renderCallStep(state, jcall, x, ActionId)).flat(),
+                ...Action[ 1 ].steps.map(x => renderCallStep(state, jcall, x, Action[ 0 ])).flat(),
             ).setGap("14px").setWidth("45%"),
         Spacer()
     ).addClass("container");
@@ -80,15 +80,15 @@ function renderCallStep(state: Partial<State>, jcall: JsonCalls, call: CallStep,
     if (call.branch)
         list.push(...Object.entries(call.branch)
             .map(([ id, data ]) => [
-                `${call.id}.${id}` == "buildIn.if.true"
+                step?.branch?.hideFirstStep === true && id == Object.keys(call.branch ?? {})[ 0 ]
                     ? null
-                    : SimpleAction({ icon: step?.icon!, steps: "native", category: undefined, color: step?.color!, displayText: translate(`${call.id}.${id}`) }, "normal"),
+                    : SimpleAction({ icon: step?.icon!, steps: "native", category: undefined, color: step?.color!, displayText: choose(step?.branch?.otherBlocks?.[ id ]) ?? toFirstUpperCase(id) }, "normal"),
                 Horizontal(...data.map(x => renderCallStep(state, jcall, x, main)).flat())
                     .setPadding("0 0 0 1rem")
                     .setGap("10px")
                     .setDirection("column")
             ]).flat(),
-            SimpleAction({ icon: step?.icon!, color: step?.color!, category: undefined, steps: "native", displayText: translate(`${call.id}.end`) }, "normal")
+            SimpleAction({ icon: step?.icon!, color: step?.color!, category: undefined, steps: "native", displayText: choose(step?.branch?.endBlock) }, "normal")
         )
     return list;
 }

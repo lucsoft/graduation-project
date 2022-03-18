@@ -3,6 +3,7 @@ import { registerMetaCategory, registerMetaData } from "./registersMeta.ts";
 import { ParamterWithData, ProviderType } from "./types.ts";
 import { CallParameters, CallStep, ActionId, Source, Action, State, Trace, Language } from "./spec.ts";
 import { registerProvider } from "./registersProvider.ts";
+import { streamAsyncIterable } from "./polyfill.ts";
 
 
 export class JsonCalls {
@@ -25,7 +26,7 @@ export class JsonCalls {
             state._callsLeft--;
             controller?.enqueue({ ...state });
         }
-        await new Promise(done => setTimeout(done, 80)) // For Demo purpose
+        await new Promise(done => setTimeout(done, 30)) // For Demo purpose
         if (!step.id.includes(".")) throw new Error();
         const [ type ] = step.id.split(".");
         if (type != "user") {
@@ -38,9 +39,8 @@ export class JsonCalls {
             if (action === null) throw new Error(`${step.id} failed with null!`);
             state._responses.set(state._trace, await action);
             return;
-        } else {
-            throw new Error("Not Yet implemented");
         }
+        for await (const _ of streamAsyncIterable(this.streamRun(step.id))) { /** */ }
     }
 
     getParamters(data: CallParameters[] | undefined, state: State): ParamterWithData {
@@ -70,11 +70,11 @@ export class JsonCalls {
     getSizeInCall(id: CallStep): unknown[] {
         const list: unknown[] = [ 1 ];
         if (id.condition) list.push(...this.getSizeInCall(id.condition));
-        console.log(id);
         // const repeat = 1;
         // const repeat = id.id == "buildIn.repeat" ? id.paramter?.[ 0 ].value as number : 1;
         // for (let index = 0; index < repeat; index++) {
-        if (id.branch) list.push(...Object.values(id.branch).map(x => x.map(x => this.getSizeInCall(x).flat())).flat());
+        if (id.id !== "buildIn.repeat")
+            if (id.branch) list.push(...Object.values(id.branch).map(x => x.map(x => this.getSizeInCall(x).flat())).flat());
         // }
         return list.filter(x => x);
     }

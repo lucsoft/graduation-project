@@ -1,0 +1,1 @@
+export const percent = (ratio: number) => ratio * 100;

@@ -9,6 +9,7 @@ import { JsonCalls } from "../json-calls-protocol/mod.ts";
 import { register } from "../test-data.ts";
 import { streamAsyncIterable } from "../json-calls-protocol/polyfill.ts";
 import { ActionId } from "../json-calls-protocol/spec.ts";
+import { percent } from "./math.ts";
 
 WebGen({
     theme: SupportedThemes.light,
@@ -56,7 +57,6 @@ async function startProcess(id: ActionId) {
     for await (const response of streamAsyncIterable(jcall.streamRun(id))) {
         const state = ViewState.unsafeViewOptions();
         state.update({ runner: { ...state.state.runner, [ id ]: [ ...(state.state.runner?.[ id ] ?? []), response ] } });
-        console.log(response)
     }
     await (new Promise((done) => setTimeout(done, 200)))
     state = ViewState.unsafeViewOptions();
@@ -75,7 +75,9 @@ function renderNavigationEntry(state: Partial<State>, update: (data: Partial<Sta
             const [ actionId, action ] = jcall.getUserActionIndex(entry)!;
             const exec = actionId ? state.runner?.[ actionId ] : undefined;
             if (exec && exec.length != 0) {
-                div.style.width = `${(1 - exec.at(-1)!._callsLeft / exec[ 0 ]!._callsLeft) * 100}%`;
+                const lastElement = exec.at(-1)!;
+                const offset = lastElement._status !== undefined ? lastElement._status : 0;
+                div.style.width = `${percent(1 - (1 - offset + lastElement._callsLeft) / exec[ 0 ]._callsLeft)}%`;
             }
             element = SimpleAction(jcall.traceform(action), "full", true, [
                 Icon(exec ? "stop" : "play_arrow")
