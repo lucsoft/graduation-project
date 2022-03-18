@@ -1,80 +1,44 @@
 // deno-lint-ignore-file no-explicit-any
-import { registerMetaCategory, registerMetaData } from "./registers.ts";
-import { JResponse, ParamterWithData } from "./types.ts";
-import { CallParameters, CallStep, ActionId, Source, Action, State, Trace } from "./spec.ts";
+import { registerMetaCategory, registerMetaData } from "./registersMeta.ts";
+import { ParamterWithData, ProviderType } from "./types.ts";
+import { CallParameters, CallStep, ActionId, Source, Action, State, Trace, Language } from "./spec.ts";
+import { registerProvider } from "./registersProvider.ts";
+
+
 export class JsonCalls {
     nativeActions = new Map<string, Action>();
     buildInActions = new Map<string, Action>();
     userActions = new Map<string, Action>();
 
-    methodProvider = new Map<string, ((parameters: ParamterWithData) => JResponse | Promise<JResponse>)>();
-    category = new Map<string, { de: string, en: string }>();
+    provider = new Map<ActionId, ProviderType>();
+    category = new Map<string, Record<Language, string>>();
 
     constructor() {
         registerMetaCategory(this.category);
         registerMetaData(this.buildInActions);
+        registerProvider(this);
     }
 
-    async singleRun(controller: ReadableStreamController<State>, { id, paramter, branch, condition, trace }: CallStep, state: State): Promise<void> {
-        state._trace = trace!;
+    async singleRun(controller: ReadableStreamController<State>, step: CallStep, state: State): Promise<void> {
+        state._trace = step.trace!;
         state._callsLeft--;
         controller.enqueue({ ...state });
         await new Promise(done => setTimeout(done, 80)) // For Demo purpose
-        if (!id.includes(".")) throw new Error();
-        const [ type, stepID ] = id.split(".");
-        if (type == "native") {
-            const data = this.getParamters(paramter, state);
-            const allParamterSet = this.nativeActions.get(stepID)?.parameters?.length ?? 0 === Object.keys(data).length;
-            if (!allParamterSet) throw new Error(`Wrong Paramter(s) was set for Action ${stepID}.`);
-            const privoder = this.methodProvider.get(stepID);
-            if (privoder == undefined) throw new Error(`Can't find step '${stepID}'`);
-            const action = privoder(data);
-            if (action === null) throw new Error(`${stepID} failed with null!`);
+        if (!step.id.includes(".")) throw new Error();
+        const [ type ] = step.id.split(".");
+        if (type != "user") {
+            const data = this.getParamters(step.paramter, state);
+            const allParamterSet = this.metaFromId(step.id)?.parameters?.length ?? 0 === Object.keys(data).length;
+            if (!allParamterSet) throw new Error(`Wrong Paramter(s) was set for Action ${step.id}.`);
+            const privoder = this.provider.get(step.id);
+            if (privoder == undefined) throw new Error(`Can't find step '${step.id}'`);
+            const action = privoder(data, { state, controller, step });
+            if (action === null) throw new Error(`${step.id} failed with null!`);
             state._responses.set(state._trace, await action);
             return;
+        } else {
+            throw new Error("Not Yet implemented");
         }
-        if (type == "buildIn") {
-            if (paramter === undefined) throw new Error();
-            // TODO: Move this methodProvider
-            switch (stepID) {
-                case "sleep": {
-                    const param = this.getParamters(paramter, state).amount.value;
-                    if (typeof param != "number") throw new Error("failed");
-                    await new Promise<void>(done => setTimeout(() => done(), param * 1000))
-                    return;
-                }
-                case "variable": {
-                    const paras = this.getParamters(paramter, state);
-                    const list = paramter.map(x => paras[ x.name ]) as (CallParameters | undefined | null)[]
-                    if (list.includes(undefined) || list.includes(null)) throw new Error();
-                    state._responses.set(state._trace, list.map((x) => state[ x!.name ] = x!.value as unknown as string)[ 0 ]);
-                    return;
-                }
-                case "truthy": {
-                    const rsp = this.getParamters(paramter, state).value.value;
-                    state._responses.set(state._trace, !!rsp);
-                    return;
-                }
-                case "falsy": {
-                    const rsp = this.getParamters(paramter, state).value.value;
-                    state._responses.set(state._trace, !rsp);
-                    return;
-                } case "if": {
-                    if (branch === undefined || condition === undefined) throw new Error();
-                    await this.singleRun(controller, { ...condition, paramter: paramter }, state);
-                    const getter = state._responses.get(state._trace);
-                    if (getter == null) throw new Error();
-                    state._callsLeft -= (!getter ? branch.true : branch.false).map(x => this.getSizeInCall(x)).reduce((partialSum, a) => partialSum + a.length, 0);
-                    for (const iterator of getter ? branch.true : branch.false) {
-                        await this.singleRun(controller, iterator, state)
-                    }
-                    return;
-                }
-                default:
-                    throw new Error();
-            }
-        }
-        throw new Error();
     }
 
     getParamters(data: CallParameters[] | undefined, state: State): ParamterWithData {
@@ -162,9 +126,18 @@ export class JsonCalls {
     metaFromId(id: ActionId) {
         return this.#getStepMapFromType(id)?.get(id.split('.')[ 1 ])
     }
+    getUserActionIndex(index: number): [ ActionId, Action ] | null {
+        return Array.from(this.userActions.entries()).map(([ id, action ]) => [ `user.${id}`, action ] as [ ActionId, Action ])[ index ];
+    }
+    /**
+     * @deprecated Please use getUserActionIndex
+     */
     getStepFromIndex(index: number): Action | null {
         return Array.from(this.userActions.values())[ index ];
     }
+    /**
+     * @deprecated Please use getUserActionIndex
+     */
     getStepIdFromIndex(index: number): ActionId | null {
         const step = Array.from(this.userActions.keys())[ index ];
         return step ? `user.${step}` : null;

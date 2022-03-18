@@ -1,5 +1,5 @@
-import { Action } from "./spec.ts";
-export function registerMetaCategory(category: Map<string, { de: string, en: string }>) {
+import { Action, Language } from "./spec.ts";
+export function registerMetaCategory(category: Map<string, Record<Language, string>>) {
     category.set("script", { de: "Skripte", en: "Scripts" });
 }
 export function registerMetaData(buildIn: Map<string, Action>) {
@@ -11,7 +11,13 @@ export function registerMetaData(buildIn: Map<string, Action>) {
         displayText: {
             de: "ist positive",
             en: "is positiv"
-        }
+        },
+        parameters: [
+            {
+                type: "string",
+                name: "value"
+            }
+        ]
     })
     buildIn.set("falsy", {
         steps: "native",
@@ -21,7 +27,13 @@ export function registerMetaData(buildIn: Map<string, Action>) {
         displayText: {
             de: "ist negativ",
             en: "is negative"
-        }
+        },
+        parameters: [
+            {
+                type: "string",
+                name: "value"
+            }
+        ]
     })
     buildIn.set("text", {
         steps: "native",
@@ -45,7 +57,13 @@ export function registerMetaData(buildIn: Map<string, Action>) {
         inlineText: {
             de: [ "Wenn", 0, -1 ],
             en: [ "When", 0, -1 ]
-        }
+        },
+        parameters: [
+            {
+                type: "boolean",
+                name: "value"
+            }
+        ]
     })
     buildIn.set("try", {
         steps: "native",

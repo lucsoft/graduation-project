@@ -7,8 +7,8 @@ export function register(jcall: JsonCalls) {
         de: "Test",
         en: "Test"
     });
-    jcall.methodProvider.set("getLamp", () => lampState);
-    jcall.methodProvider.set("lamp", ({ value }) => {
+    jcall.provider.set("native.getLamp", () => lampState);
+    jcall.provider.set("native.lamp", ({ value }) => {
         if (value.type !== "boolean" || !Object.hasOwn(value, "value")) return null;
         console.log("LAMP", lampState, value.value);
         lampState = value.value;
@@ -68,14 +68,14 @@ export function register(jcall: JsonCalls) {
                         {
                             id: "buildIn.sleep",
                             paramter: [
-                                { name: "amount", type: "number", value: 3 }
+                                { name: "amount", type: "number", value: 1 }
                             ]
                         },
                         { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: true } ] },
                         {
                             id: "buildIn.sleep",
                             paramter: [
-                                { name: "amount", type: "number", value: 2 }
+                                { name: "amount", type: "number", value: 0.5 }
                             ]
                         },
                         { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: false } ] }
