@@ -3,13 +3,17 @@ export type Source = { type: "variable", id: string } | { type: "response", id: 
 export type Variable = Record<string, string | boolean | number>;
 export type ColorType = "red" | "red-orange" | "orange" | "yellow" | "green" | "green-blue" | "blue" | "blue-violet" | "violet" | "violet-pink" | "pink" | "gray" | "steel" | "brown"
 export type Trace = string;
-export type State = Record<string, string | boolean | number | Map<number, any>> & { _callsLeft: number, _trace: Trace, _responses: Map<Trace, any> };
+export type State =
+    Record<string, string | boolean | number | Map<number, any>>
+    & { _responses: Map<Trace, any>, _callsLeft: number, _trace: Trace, _masterTrace?: Trace, _status?: number };
+
 export type ActionId = `${"user" | "native" | "buildIn"}.${string}`;
-export type CallHints = "count" | "secounds" | "power" | "lock" | "value";
+export type CallHints = "count" | "secound" | "power" | "lock" | "value";
 export type CallParameters =
     | { name: string; type: "number"; value?: number | Source; hint?: CallHints }
     | { name: string; type: "boolean"; value?: boolean | Source; hint?: CallHints }
-    | { name: string; type: "string"; value?: string | Source; hint?: CallHints };
+    | { name: string; type: "string"; value?: string | Source; hint?: CallHints }
+    | { name: string; type: "array"; value?: unknown[] | Source; hint?: CallHints };
 
 export type CallStep = {
     id: ActionId,
@@ -27,6 +31,11 @@ export type Action = {
     icon: string,
     color: ColorType,
     variables?: Variable,
+    branch?: {
+        hideFirstStep?: boolean
+        otherBlocks?: Record<string, Record<Language, string>>
+        endBlock: Record<Language, string>
+    },
     parameters?: CallParameters[],
     steps: CallStep[] | 'native'
 };

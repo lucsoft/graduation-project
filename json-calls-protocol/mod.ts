@@ -19,10 +19,12 @@ export class JsonCalls {
         registerProvider(this);
     }
 
-    async singleRun(controller: ReadableStreamController<State>, step: CallStep, state: State): Promise<void> {
-        state._trace = step.trace!;
-        state._callsLeft--;
-        controller.enqueue({ ...state });
+    async singleRun(controller: ReadableStreamController<State> | undefined, step: CallStep, state: State): Promise<void> {
+        if (controller) {
+            state._trace = step.trace!;
+            state._callsLeft--;
+            controller?.enqueue({ ...state });
+        }
         await new Promise(done => setTimeout(done, 80)) // For Demo purpose
         if (!step.id.includes(".")) throw new Error();
         const [ type ] = step.id.split(".");
@@ -49,8 +51,8 @@ export class JsonCalls {
         if (!data) return undefined;
         return data.find(x => x.trace === trace) ?? undefined;
     }
-    getDataFromSource(data: string | number | boolean | Source | undefined, state: State) {
-        if (typeof data === "object")
+    getDataFromSource(data: string | number | boolean | unknown[] | Source | undefined, state: State) {
+        if (!Array.isArray(data) && typeof data === "object")
             switch (data.type) {
                 case "variable":
                     if (!Object.hasOwn(state, data.id)) throw new Error();
@@ -68,7 +70,12 @@ export class JsonCalls {
     getSizeInCall(id: CallStep): unknown[] {
         const list: unknown[] = [ 1 ];
         if (id.condition) list.push(...this.getSizeInCall(id.condition));
+        console.log(id);
+        // const repeat = 1;
+        // const repeat = id.id == "buildIn.repeat" ? id.paramter?.[ 0 ].value as number : 1;
+        // for (let index = 0; index < repeat; index++) {
         if (id.branch) list.push(...Object.values(id.branch).map(x => x.map(x => this.getSizeInCall(x).flat())).flat());
+        // }
         return list.filter(x => x);
     }
     getSize(id: ActionId): number {

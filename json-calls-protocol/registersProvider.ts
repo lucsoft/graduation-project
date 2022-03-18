@@ -1,5 +1,5 @@
 import { JsonCalls } from "./mod.ts";
-import { CallParameters } from "./spec.ts";
+import { CallParameters, State } from "./spec.ts";
 
 export function registerProvider(jcall: JsonCalls) {
     jcall.provider.set("buildIn.sleep", async ({ amount }) => {
@@ -17,6 +17,27 @@ export function registerProvider(jcall: JsonCalls) {
     })
     jcall.provider.set("buildIn.falsy", ({ value }) => {
         return !value.value;
+    })
+    jcall.provider.set("buildIn.repeat", async ({ count }, { controller, step: { branch, trace }, state }) => {
+        if (typeof count.value != "number") throw new Error();
+        let counter = 0;
+        for (let index = 0; index < count.value; index++) {
+            const newVariable = Object.values(branch!.repeating);
+            for (let innerIndex = 0; innerIndex < newVariable.length; innerIndex++) {
+                counter++;
+                const element = newVariable[ innerIndex ];
+                const clonedState = {
+                    _callsLeft: state._callsLeft - Object.keys(branch!.repeating).length,
+                    _responses: state._responses,
+                    _trace: element.trace ?? "0",
+                    _masterTrace: trace ?? "0",
+                    _status: counter / (count.value * newVariable.length)
+                } as State;
+                controller?.enqueue(clonedState);
+                await jcall.singleRun(undefined, element, clonedState);
+            }
+        }
+        return undefined;
     })
     jcall.provider.set("buildIn.if", async (_, { controller, state, step: { paramter, condition, branch } }) => {
         if (branch === undefined || condition === undefined) throw new Error();

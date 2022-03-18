@@ -49,6 +49,37 @@ export function register(jcall: JsonCalls) {
             }
         ]
     });
+    jcall.userActions.set("test", {
+        icon: "directions_bike",
+        color: "green",
+        category: "test",
+        steps: [
+            {
+                id: "buildIn.repeat",
+                paramter: [
+                    { type: "number", name: "count", value: 5 }
+                ],
+                branch: {
+                    repeating: [
+                        { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: true } ] },
+                        {
+                            id: "buildIn.sleep",
+                            paramter: [
+                                { name: "amount", type: "number", value: 0.5 }
+                            ]
+                        },
+                        { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: false } ] },
+                        {
+                            id: "buildIn.sleep",
+                            paramter: [
+                                { name: "amount", type: "number", value: 0.5 }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    })
     jcall.userActions.set("lampToggle", {
         icon: "light",
         category: "test",

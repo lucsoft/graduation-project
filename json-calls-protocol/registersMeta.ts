@@ -58,6 +58,19 @@ export function registerMetaData(buildIn: Map<string, Action>) {
             de: [ "Wenn", 0, -1 ],
             en: [ "When", 0, -1 ]
         },
+        branch: {
+            hideFirstStep: true,
+            otherBlocks: {
+                false: {
+                    de: "Sonst",
+                    en: "Else"
+                }
+            },
+            endBlock: {
+                de: 'Ende von "Wenn"',
+                en: 'End of "When"'
+            }
+        },
         parameters: [
             {
                 type: "boolean",
@@ -97,7 +110,21 @@ export function registerMetaData(buildIn: Map<string, Action>) {
         displayText: {
             de: "Wiederholen",
             en: "Repeat"
-        }
+        },
+        branch: {
+            hideFirstStep: true,
+            endBlock: {
+                de: 'Ende von "Wiederholen"',
+                en: 'End of "Repeat"'
+            }
+        },
+        parameters: [
+            {
+                name: "count",
+                type: "number",
+                hint: "count"
+            }
+        ]
     })
     buildIn.set("sleep", {
         steps: "native",
@@ -116,7 +143,7 @@ export function registerMetaData(buildIn: Map<string, Action>) {
             {
                 type: "number",
                 name: "amount",
-                hint: "secounds"
+                hint: "secound"
             }
         ]
     })
