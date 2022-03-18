@@ -21,7 +21,7 @@ export type CallStep = {
 export type Language = "de" | "en";
 
 export type Action = {
-    displayText?: string,
+    displayText?: string | Record<Language, string>,
     category: string | undefined,
     inlineText?: Record<Language, (number | string)[]>,
     icon: string,

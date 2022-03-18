@@ -9,7 +9,6 @@ export class JsonCalls {
 
     methodProvider = new Map<string, ((parameters: ParamterWithData) => JResponse | Promise<JResponse>)>();
     category = new Map<string, { de: string, en: string }>();
-    language: "de" | "en" = "de";
 
     constructor() {
         registerMetaCategory(this.category);

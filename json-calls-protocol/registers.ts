@@ -8,42 +8,60 @@ export function registerMetaData(buildIn: Map<string, Action>) {
         color: "green",
         category: "conditions",
         icon: "done",
-        displayText: "ist positiv"
+        displayText: {
+            de: "ist positive",
+            en: "is positiv"
+        }
     })
     buildIn.set("falsy", {
         steps: "native",
         color: "red",
         category: "conditions",
         icon: "close",
-        displayText: "ist negativ"
+        displayText: {
+            de: "ist negativ",
+            en: "is negative"
+        }
     })
     buildIn.set("text", {
         steps: "native",
         color: "yellow",
         category: "system",
         icon: "notes",
-        displayText: "Text"
+        displayText: {
+            de: "Text",
+            en: "Text"
+        }
     })
     buildIn.set("if", {
         steps: "native",
         color: "gray",
         category: "script",
-        displayText: "Wenn",
+        displayText: {
+            de: "Wenn",
+            en: "When"
+        },
         icon: "fork_right",
         inlineText: {
             de: [ "Wenn", 0, -1 ],
             en: [ "When", 0, -1 ]
         }
     })
-    buildIn.set("retry", {
+    buildIn.set("try", {
         steps: "native",
         color: "gray",
         category: "script",
         icon: "sync_problem",
-        displayText: "Versuchen*"
+        displayText: {
+            de: "Versuchen",
+            en: "Try"
+        }
     })
     buildIn.set("repeatWith", {
-        displayText: "Durchlaufen*",
+        displayText: {
+            de: "Durchlaufen",
+            en: "Run through"
+        },
         steps: "native",
         category: "script",
         color: "gray",
@@ -58,7 +76,10 @@ export function registerMetaData(buildIn: Map<string, Action>) {
             en: [ "Repeat", 0 ]
         },
         icon: "sync",
-        displayText: "Wiederholen*"
+        displayText: {
+            de: "Wiederholen",
+            en: "Repeat"
+        }
     })
     buildIn.set("sleep", {
         steps: "native",
@@ -68,7 +89,10 @@ export function registerMetaData(buildIn: Map<string, Action>) {
             de: [ 0, "warten" ],
             en: [ "Wait", 0 ]
         },
-        displayText: "Warten",
+        displayText: {
+            de: "Warten",
+            en: "Wait"
+        },
         icon: "hourglass_bottom",
         parameters: [
             {
@@ -82,7 +106,10 @@ export function registerMetaData(buildIn: Map<string, Action>) {
         steps: "native",
         color: "orange",
         category: "script",
-        displayText: "Zu Variable hinzufügen",
+        displayText: {
+            de: "Zu Variable hinzufügen",
+            en: "Add to variable"
+        },
         icon: "format_quote",
         parameters: [
             { type: "number", name: "source" },
@@ -98,6 +125,9 @@ export function registerMetaData(buildIn: Map<string, Action>) {
         color: "gray",
         category: "system",
         icon: "notes",
-        displayText: "Kommentar"
+        displayText: {
+            de: "Kommentar",
+            en: "Comment"
+        }
     })
 }

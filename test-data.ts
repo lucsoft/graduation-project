@@ -22,7 +22,10 @@ export function register(jcall: JsonCalls) {
             en: [ "Get Light" ]
         },
         icon: "lightbulb",
-        displayText: "Licht abrufen",
+        displayText: {
+            de: "Licht abrufen",
+            en: "Get Light"
+        },
         steps: "native"
     });
     jcall.nativeActions.set("lamp", {
@@ -33,7 +36,10 @@ export function register(jcall: JsonCalls) {
             en: [ "Light", 0 ]
         },
         icon: "lightbulb",
-        displayText: "Licht konfigurieren",
+        displayText: {
+            de: "Licht konfigurieren",
+            en: "Set Light"
+        },
         steps: "native",
         parameters: [
             {

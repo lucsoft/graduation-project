@@ -3,6 +3,7 @@ import { Component, Card, headless, Horizontal, Icon, Spacer, Vertical } from ".
 import { ActionType } from "./types.ts";
 import { Action } from "../json-calls-protocol/spec.ts";
 import { renderRichTitle } from "./richAction.ts";
+import { chooseTranslation } from "./i8n.ts";
 
 
 export function SimpleAction({ icon, color, displayText }: Action, type: ActionType, closeable = true, actions: Component[] = []) {
@@ -16,7 +17,7 @@ export function SimpleAction({ icon, color, displayText }: Action, type: ActionT
                 ? Icon("disabled_by_default")
                     .addClass("close-button", "action-icon")
                 : null,
-            ...renderRichTitle([ displayText ?? "Unnammed Step" ]),
+            ...renderRichTitle([ chooseTranslation(displayText) ]),
             Spacer(),
             Vertical(
                 type == "normal" && closeable ? Icon("cancel").addClass("close-button") : null,

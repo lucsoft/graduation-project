@@ -2,11 +2,12 @@ import { Component, Card, headless, Horizontal, Icon, Spacer, Vertical, PlainTex
 import { isCallStep, toFirstUpperCase } from "../helper.ts";
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
 import { Action, CallStep, CallParameters, ActionId } from "../json-calls-protocol/spec.ts";
+import { choose, chooseTranslation } from "./i8n.ts";
 import './style/rich-elements.css';
 import { State, TitleType } from "./types.ts";
 
 export function RichAction(state: Partial<State>, jcall: JsonCalls, step: Action, caller: CallStep, main: ActionId, closeable = true, actions: Component[] = []) {
-    const data = step.inlineText?.[ jcall.language ].
+    const data = choose(step.inlineText)?.
         map(entry => typeof entry == "string" ? entry : (entry === -1 ? caller.condition : { ...caller.paramter![ entry ], hint: step.parameters?.[ entry ].hint })) as TitleType;
 
     return Card(headless(
@@ -35,7 +36,7 @@ const getTracer = (state: Partial<State>, main: string) => state.runner?.[ main 
 function renderInline(x: CallParameters | CallStep, main?: ActionId, jcall?: JsonCalls, state?: Partial<State>) {
     if (x == null) throw new Error("CallParamter is null");
     if (isCallStep(x)) {
-        return Button(jcall!.meta(x)?.displayText ?? "lol")
+        return Button(chooseTranslation(jcall!.meta(x)?.displayText))
             .setColor(Color.Colored)
             .setStyle(getTracer(state!, main!) === x.trace ? ButtonStyle.Normal : ButtonStyle.Secondary)
     }
@@ -65,7 +66,7 @@ function renderInline(x: CallParameters | CallStep, main?: ActionId, jcall?: Jso
             const targetStep = jcall.find(jcall.metaFromId(main)?.steps, x.value.id);
             const meta = jcall.meta(targetStep);
             if (targetStep && meta)
-                return Button(meta.displayText!)
+                return Button(chooseTranslation(meta.displayText))
                     .addPrefix(
                         Icon(meta.icon)
                             .addClass("action-icon", "main")
