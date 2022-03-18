@@ -106,12 +106,12 @@ export class JsonCalls {
                 const element = steps[ index ];
                 if (typeof element == "string") continue;
                 element.trace = layer + (index + offset).toString();
-                recusion(element.trace + ".", [ element.condition! ].filter(x => x))
+                recusion(`${element.trace}.`, [ element.condition! ].filter(x => x))
                 if (element.branch) {
                     const branches = Object.values(element.branch);
                     for (let innerIndex = 0; innerIndex < branches.length; innerIndex++) {
                         const innerElement = branches[ innerIndex ];
-                        recusion(element.trace + "." + (element.condition ? innerIndex + 1 : innerIndex) + ".", innerElement, innerIndex + 1);
+                        recusion(`${element.trace}.${element.condition ? innerIndex + 1 : innerIndex}.`, innerElement, innerIndex + 1);
                     }
                 }
             }
@@ -129,22 +129,8 @@ export class JsonCalls {
     getUserActionIndex(index: number): [ ActionId, Action ] | null {
         return Array.from(this.userActions.entries()).map(([ id, action ]) => [ `user.${id}`, action ] as [ ActionId, Action ])[ index ];
     }
-    /**
-     * @deprecated Please use getUserActionIndex
-     */
-    getStepFromIndex(index: number): Action | null {
-        return Array.from(this.userActions.values())[ index ];
-    }
-    /**
-     * @deprecated Please use getUserActionIndex
-     */
-    getStepIdFromIndex(index: number): ActionId | null {
-        const step = Array.from(this.userActions.keys())[ index ];
-        return step ? `user.${step}` : null;
-    }
 
     // Private Methods
-
     #getStepMapFromType(type: string) {
         switch (type.split('.')[ 0 ]) {
             case "buildIn":

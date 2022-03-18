@@ -3,7 +3,7 @@ import { Component, Card, headless, Horizontal, Icon, Spacer, Vertical } from ".
 import { ActionType } from "./types.ts";
 import { Action } from "../json-calls-protocol/spec.ts";
 import { renderRichTitle } from "./richAction.ts";
-import { chooseTranslation } from "./i8n.ts";
+import { chooseTranslation } from "./i18n.ts";
 
 
 export function SimpleAction({ icon, color, displayText }: Action, type: ActionType, closeable = true, actions: Component[] = []) {

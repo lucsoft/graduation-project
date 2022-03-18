@@ -2,14 +2,14 @@ import { Button, ButtonStyle, Card, Color, Component, Grid, headless, Horizontal
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
 import { ActionId, CallStep } from "../json-calls-protocol/spec.ts";
 import { SimpleAction } from "./action.ts";
-import { translate } from "./i8n.ts";
+import { translate } from "./i18n.ts";
 import { RichAction } from "./richAction.ts";
 import { State } from "./types.ts";
 
 export const EditorView = (jcall: JsonCalls, state: Partial<State>, _update: (data: Partial<State>) => void) => {
-    const step = jcall.getStepFromIndex(state.tabs?.[ state.selectedTab ?? 0 ] as number);
-    const stepId = jcall.getStepIdFromIndex(state.tabs?.[ state.selectedTab ?? 0 ] as number);
-    if (!step || !stepId) return null;
+    const ActionUnion = jcall.getUserActionIndex(state.tabs?.[ state.selectedTab ?? 0 ] as number);
+    if (!ActionUnion) return null;
+    const [ ActionId, Action ] = ActionUnion;
     return Horizontal(
         Card(headless(
             Vertical(
@@ -65,10 +65,10 @@ export const EditorView = (jcall: JsonCalls, state: Partial<State>, _update: (da
             .setDirection("column")
             .setAlign("stretch"),
         Spacer(),
-        step.steps === "native"
+        Action.steps === "native"
             ? PlainText("Can't edit a Native Action")
             : Vertical(
-                ...step.steps.map(x => renderCallStep(state, jcall, x, stepId)).flat(),
+                ...Action.steps.map(x => renderCallStep(state, jcall, x, ActionId)).flat(),
             ).setGap("14px").setWidth("45%"),
         Spacer()
     ).addClass("container");

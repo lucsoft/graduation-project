@@ -72,24 +72,20 @@ function renderNavigationEntry(state: Partial<State>, update: (data: Partial<Sta
         const progress = Custom(div).addClass("progressbar")
         if (entry == "search-tab") element = Card(headless(PlainText("Search"))).addClass("action", "full");
         else {
-            const step = jcall.traceform(jcall.getStepFromIndex(entry)!);
-            const stepId = jcall.getStepIdFromIndex(entry);
-            const exec = stepId ? state.runner?.[ stepId ] : undefined;
-            if (exec) {
-                if (exec.length == 0)
-                    div.style.width = "2%";
-                else {
-                    div.style.width = ((1 - exec.at(-1)!._callsLeft / exec[ 0 ]!._callsLeft) * 100) + "%";
-                }
+            const [ actionId, action ] = jcall.getUserActionIndex(entry)!;
+            const exec = actionId ? state.runner?.[ actionId ] : undefined;
+            if (exec && exec.length != 0) {
+                div.style.width = `${(1 - exec.at(-1)!._callsLeft / exec[ 0 ]!._callsLeft) * 100}%`;
             }
-
-            element = SimpleAction(step, "full", true, [
-                Icon(exec ? "stop" : "play_arrow").addClass("action-icon").onClick(() => {
-                    if (!exec)
-                        startProcess(jcall.getStepIdFromIndex(entry)!)
-                })
+            element = SimpleAction(jcall.traceform(action), "full", true, [
+                Icon(exec ? "stop" : "play_arrow")
+                    .addClass("action-icon")
+                    .onClick(() => {
+                        if (!exec) startProcess(actionId)
+                    })
             ])
         }
+
         if (main)
             return element
                 .addPrefix(progress).setGrow(3)
@@ -98,7 +94,8 @@ function renderNavigationEntry(state: Partial<State>, update: (data: Partial<Sta
             return element
                 .setGrow(1)
                 .onClick(() => update({ selectedTab: index }))
-        return SimpleAction(jcall.getStepFromIndex(entry)!, "full")
+
+        return SimpleAction(jcall.getUserActionIndex(entry)![ 1 ], "full")
             .setGrow(1)
             .addPrefix(progress)
             .onClick(() => update({ selectedTab: index }))

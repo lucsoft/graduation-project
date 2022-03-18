@@ -2,7 +2,7 @@ import { Component, Card, headless, Horizontal, Icon, Spacer, Vertical, PlainTex
 import { isCallStep, toFirstUpperCase } from "../helper.ts";
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
 import { Action, CallStep, CallParameters, ActionId } from "../json-calls-protocol/spec.ts";
-import { choose, chooseTranslation } from "./i8n.ts";
+import { choose, chooseTranslation } from "./i18n.ts";
 import './style/rich-elements.css';
 import { State, TitleType } from "./types.ts";
 
