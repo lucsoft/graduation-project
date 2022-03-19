@@ -50,7 +50,7 @@ export function registerProvider(jcall: JsonCalls) {
             for (let innerIndex = 0; innerIndex < newVariable.length; innerIndex++) {
                 const element = newVariable[ innerIndex ];
                 const clonedState = {
-                    _callsLeft: state._callsLeft,
+                    _callsLeft: state._callsLeft + 1,
                     _responses: state._responses,
                     _trace: element.trace ?? "0",
                     _masterTrace: trace ?? "0",
@@ -68,7 +68,7 @@ export function registerProvider(jcall: JsonCalls) {
         await jcall.singleRun(controller, { ...condition, parameter }, state);
         const getter = state._responses.get(state._trace);
         if (getter == null) throw new Error();
-        state._callsLeft -= (!getter ? branch.true : branch.false).map(x => jcall.getSizeInCall(x)).reduce((partialSum, a) => partialSum + a.length, 0);
+        state._callsLeft -= (!getter ? branch.true : branch.false).map(x => jcall.getSizeInStep(x)).reduce((partialSum, a) => partialSum + a.length, 0);
         for (const iterator of getter ? branch.true : branch.false) {
             await jcall.singleRun(controller, iterator, state)
         }

@@ -1,22 +1,19 @@
 // deno-lint-ignore-file no-explicit-any
 import { registerMetaCategory, registerMetaData } from "./registersMeta.ts";
-import { ParamterWithData, ProviderType } from "./types.ts";
+import { ParameterWithData, ProviderType } from "./types.ts";
 import { CallParameters, CallStep, ActionId, Source, Action, State, Trace, Language } from "./spec.ts";
 import { registerProvider } from "./registersProvider.ts";
 import { streamAsyncIterable } from "./polyfill.ts";
 
 
 export class JsonCalls {
-    nativeActions = new Map<string, Action>();
-    buildInActions = new Map<string, Action>();
-    userActions = new Map<string, Action>();
-
+    actions = new Map<ActionId, Action>();
     provider = new Map<ActionId, ProviderType>();
     category = new Map<string, Record<Language, string>>();
 
     constructor() {
         registerMetaCategory(this.category);
-        registerMetaData(this.buildInActions);
+        registerMetaData(this.actions);
         registerProvider(this);
     }
 
@@ -30,9 +27,9 @@ export class JsonCalls {
         if (!step.id.includes(".")) throw new Error();
         const [ type ] = step.id.split(".");
         if (type != "user") {
-            const data = this.getParamters(step.paramter, state);
-            const allParamterSet = this.metaFromId(step.id)?.parameters?.length ?? 0 === Object.keys(data).length;
-            if (!allParamterSet) throw new Error(`Wrong Paramter(s) was set for Action ${step.id}.`);
+            const data = this.getparameters(step.parameter, state);
+            const allparameterSet = this.metaFromId(step.id)?.parameters?.length ?? 0 === Object.keys(data).length;
+            if (!allparameterSet) throw new Error(`Wrong parameter(s) was set for Action ${step.id}.`);
             const privoder = this.provider.get(step.id);
             if (privoder == undefined) throw new Error(`Can't find step '${step.id}'`);
             const action = privoder(data, { state, controller, step });
@@ -43,56 +40,14 @@ export class JsonCalls {
         for await (const _ of streamAsyncIterable(this.streamRun(step.id))) { /** */ }
     }
 
-    getParamters(data: CallParameters[] | undefined, state: State): ParamterWithData {
-        return data ? Object.fromEntries(data.map(({ name, type, value, hint }) => [ name, { type, value: this.getDataFromSource(value, state), hint } ])) : {};
-    }
-    find(data: "native" | CallStep[] | undefined, trace: Trace): undefined | CallStep {
-        if (typeof data === "string") return undefined;
-        if (!data) return undefined;
-        return data.find(x => x.trace === trace) ?? undefined;
-    }
-    getDataFromSource(data: string | number | boolean | unknown[] | Source | undefined, state: State) {
-        if (!Array.isArray(data) && typeof data === "object")
-            switch (data.type) {
-                case "variable":
-                    if (!Object.hasOwn(state, data.id)) throw new Error();
-                    return state[ data.id ];
-                case "paramter":
-                    throw new Error("not implemented")
-                case "response": {
-                    if (!state._responses.has(data.id)) throw new Error();
-                    return state._responses.get(data.id);
-                }
-            }
-        else
-            return data;
-    }
-    getSizeInCall(id: CallStep): unknown[] {
-        const list: unknown[] = [ 1 ];
-        if (id.condition) list.push(...this.getSizeInCall(id.condition));
-        // const repeat = 1;
-        // const repeat = id.id == "buildIn.repeat" ? id.paramter?.[ 0 ].value as number : 1;
-        // for (let index = 0; index < repeat; index++) {
-        if (id.id !== "buildIn.repeat")
-            if (id.branch) list.push(...Object.values(id.branch).map(x => x.map(x => this.getSizeInCall(x).flat())).flat());
-        // }
-        return list.filter(x => x);
-    }
-    getSize(id: ActionId): number {
-        const [ _, stepId ] = id.split(".");
-        const step = this.userActions.get(stepId);
-        if (step?.steps == "native") return 1;
-        return step?.steps.map(x => this.getSizeInCall(x)).flat().length ?? -1;
-    }
     streamRun(id: ActionId) {
         if (!id.startsWith("user.")) throw new Error("Not starting with user.");
-        const [ _, stepId ] = id.split(".");
-        const step = this.userActions.get(stepId);
-        if (step === undefined || step.steps === undefined || step.steps === "native") throw new Error(stepId + "invalid data")
+        const step = this.actions.get(id);
+        if (step === undefined || step.steps === undefined || step.steps === "native") throw new Error(`Can't StreamRun ${id}`)
         const state = {
             ...step.variables ?? {},
             _trace: "",
-            _callsLeft: this.getSize(id),
+            _callsLeft: this.getSizeInAction(id),
             _responses: new Map<Trace, any>(),
         } as State;
         return new ReadableStream<State>({
@@ -127,25 +82,52 @@ export class JsonCalls {
         return data;
     }
 
+    getparameters(data: CallParameters[] | undefined, state: State): ParameterWithData {
+        return data ? Object.fromEntries(data.map(({ name, type, value, hint }) => [ name, { type, value: this.getDataFromSource(value, state), hint } ])) : {};
+    }
+
+    find(data: "native" | CallStep[] | undefined, trace: Trace): undefined | CallStep {
+        if (typeof data === "string") return undefined;
+        if (!data) return undefined;
+        return data.find(x => x.trace === trace) ?? undefined;
+    }
+
     meta(step?: CallStep): Action | undefined {
         return step ? this.metaFromId(step.id) : undefined;
     }
+
     metaFromId(id: ActionId) {
-        return this.#getStepMapFromType(id)?.get(id.split('.')[ 1 ])
-    }
-    getUserActionIndex(index: number): [ ActionId, Action ] | null {
-        return Array.from(this.userActions.entries()).map(([ id, action ]) => [ `user.${id}`, action ] as [ ActionId, Action ])[ index ];
+        const data = this.actions.get(id);
+        if (data) return data.steps == "native" ? data : this.traceform(data);
+        return undefined;
     }
 
-    // Private Methods
-    #getStepMapFromType(type: string) {
-        switch (type.split('.')[ 0 ]) {
-            case "buildIn":
-                return this.buildInActions;
-            case "native":
-                return this.nativeActions;
-            case "user":
-                return this.userActions;
-        }
+    getDataFromSource(data: string | number | boolean | unknown[] | Source | undefined, state: State) {
+        if (!Array.isArray(data) && typeof data === "object")
+            switch (data.type) {
+                case "variable":
+                    if (!Object.hasOwn(state, data.id)) throw new Error();
+                    return state[ data.id ];
+                case "parameter":
+                    throw new Error("not implemented")
+                case "response": {
+                    if (!state._responses.has(data.id)) throw new Error();
+                    return state._responses.get(data.id);
+                }
+            }
+        else
+            return data;
+    }
+    getSizeInStep(id: CallStep): unknown[] {
+        const list: unknown[] = [ 1 ];
+        if (id.condition) list.push(...this.getSizeInStep(id.condition));
+        if (id.branch && id.id !== "buildIn.repeat")
+            list.push(...Object.values(id.branch).map(x => x.map(x => this.getSizeInStep(x).flat())).flat());
+        return list.filter(x => x);
+    }
+    getSizeInAction(id: ActionId): number {
+        const step = this.actions.get(id);
+        if (step?.steps == "native") return 1;
+        return step?.steps.map(x => this.getSizeInStep(x)).flat().length ?? -1;
     }
 }

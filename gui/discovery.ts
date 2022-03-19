@@ -16,14 +16,17 @@ export function DiscoveryView(jcall: JsonCalls, state: Partial<State>, update: (
                 Spacer()
             ),
             Grid(
-                ...Array.from(jcall.userActions.values()).filter(limit(3 * 2)).map((x, index) =>
-                    SimpleAction(x, "full.focus")
-                        .onClick(() => {
-                            update({
-                                tabs: state.tabs?.map((x, i) => i == state.selectedTab ? index : x)
+                ...Array.from(jcall.actions.entries())
+                    .filter(([ id ]) => id.startsWith("user."))
+                    .filter(limit(3 * 2))
+                    .map(([ id, action ]) =>
+                        SimpleAction(action, "full.focus")
+                            .onClick(() => {
+                                update({
+                                    tabs: state.tabs?.map((x, i) => i == state.selectedTab ? id : x)
+                                })
                             })
-                        })
-                )
+                    )
             )
                 .setGap("8px")
                 .setDynamicColumns(14),
@@ -34,14 +37,16 @@ export function DiscoveryView(jcall: JsonCalls, state: Partial<State>, update: (
                 Spacer()
             ),
             Grid(
-                ...Array.from(jcall.userActions.values()).map((x, index) =>
-                    SimpleAction(x, "normal", false)
-                        .onClick(() => {
-                            update({
-                                tabs: state.tabs?.map((x, i) => i == state.selectedTab ? index : x)
+                ...Array.from(jcall.actions.entries())
+                    .filter(([ id ]) => id.startsWith("user."))
+                    .map(([ id, Action ]) =>
+                        SimpleAction(Action, "normal", false)
+                            .onClick(() => {
+                                update({
+                                    tabs: state.tabs?.map((x, i) => i == state.selectedTab ? id : x)
+                                })
                             })
-                        })
-                )
+                    )
             )
                 .setGap("8px")
                 .setDynamicColumns(9),

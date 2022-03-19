@@ -1,3 +1,5 @@
+// Chrome doesn't support Stream#getIterable.
+// This micro-ponyfill can be removed in the future
 export async function* streamAsyncIterable(stream: ReadableStream) {
     const reader = stream.getReader();
     try {

@@ -1,9 +1,9 @@
-import { Action, Language } from "./spec.ts";
+import { Action, ActionId, Language } from "./spec.ts";
 export function registerMetaCategory(category: Map<string, Record<Language, string>>) {
     category.set("script", { de: "Skripte", en: "Scripts" });
 }
-export function registerMetaData(buildIn: Map<string, Action>) {
-    buildIn.set("truthy", {
+export function registerMetaData(regi: Map<ActionId, Action>) {
+    regi.set("buildIn.truthy", {
         steps: "native",
         color: "green",
         category: "conditions",
@@ -19,7 +19,7 @@ export function registerMetaData(buildIn: Map<string, Action>) {
             }
         ]
     })
-    buildIn.set("falsy", {
+    regi.set("buildIn.falsy", {
         steps: "native",
         color: "red",
         category: "conditions",
@@ -35,7 +35,7 @@ export function registerMetaData(buildIn: Map<string, Action>) {
             }
         ]
     })
-    buildIn.set("text", {
+    regi.set("buildIn.text", {
         steps: "native",
         color: "yellow",
         category: "system",
@@ -45,7 +45,7 @@ export function registerMetaData(buildIn: Map<string, Action>) {
             en: "Text"
         }
     })
-    buildIn.set("if", {
+    regi.set("buildIn.if", {
         steps: "native",
         color: "gray",
         category: "script",
@@ -78,7 +78,7 @@ export function registerMetaData(buildIn: Map<string, Action>) {
             }
         ]
     })
-    buildIn.set("try", {
+    regi.set("buildIn.try", {
         steps: "native",
         color: "gray",
         category: "script",
@@ -106,7 +106,7 @@ export function registerMetaData(buildIn: Map<string, Action>) {
             }
         }
     })
-    buildIn.set("repeatWith", {
+    regi.set("buildIn.repeatWith", {
         displayText: {
             de: "Durchlaufen",
             en: "Run through"
@@ -116,7 +116,7 @@ export function registerMetaData(buildIn: Map<string, Action>) {
         color: "gray",
         icon: "data_array"
     })
-    buildIn.set("repeat", {
+    regi.set("buildIn.repeat", {
         steps: "native",
         color: "gray",
         category: "script",
@@ -144,7 +144,7 @@ export function registerMetaData(buildIn: Map<string, Action>) {
             }
         ]
     })
-    buildIn.set("sleep", {
+    regi.set("buildIn.sleep", {
         steps: "native",
         color: "gray",
         category: "script",
@@ -165,7 +165,7 @@ export function registerMetaData(buildIn: Map<string, Action>) {
             }
         ]
     })
-    buildIn.set("variable", {
+    regi.set("buildIn.variable", {
         steps: "native",
         color: "orange",
         category: "script",
@@ -183,7 +183,7 @@ export function registerMetaData(buildIn: Map<string, Action>) {
             en: [ "Set", 0, "to", 1 ]
         }
     })
-    buildIn.set("comment", {
+    regi.set("buildIn.comment", {
         steps: "native",
         color: "gray",
         category: "system",
