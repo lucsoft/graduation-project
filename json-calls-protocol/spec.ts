@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-export type Source = { type: "variable", id: string } | { type: "response", id: Trace } | { type: "paramter", id: string };
+export type Source = { type: "variable", id: string } | { type: "response", id: Trace } | { type: "parameter", id: string };
 export type Variable = Record<string, string | boolean | number>;
 export type ColorType = "red" | "red-orange" | "orange" | "yellow" | "green" | "green-blue" | "blue" | "blue-violet" | "violet" | "violet-pink" | "pink" | "gray" | "steel" | "brown"
 export type Trace = string;
@@ -8,6 +8,7 @@ export type State =
     & { _responses: Map<Trace, any>, _callsLeft: number, _trace: Trace, _masterTrace?: Trace, _status?: number };
 
 export type ActionId = `${"user" | "native" | "buildIn"}.${string}`;
+export type ActionTuple = [ ActionId, Action ];
 export type CallHints = "count" | "secound" | "power" | "lock" | "value";
 export type CallParameters =
     | { name: string; type: "number"; value?: number | Source; hint?: CallHints }
@@ -18,7 +19,7 @@ export type CallParameters =
 export type CallStep = {
     id: ActionId,
     trace?: string,
-    paramter?: CallParameters[],
+    parameter?: CallParameters[],
     condition?: CallStep,
     branch?: Record<string, CallStep[]>
 };

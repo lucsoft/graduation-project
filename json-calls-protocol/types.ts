@@ -1,6 +1,6 @@
 import { CallStep, State } from "./spec.ts";
 
-export type ParamterWithData = Record<string, (
+export type ParameterWithData = Record<string, (
     | { type: "number", value: number }
     | { type: "boolean", value: boolean }
     | { type: "string", value: string }
@@ -9,7 +9,7 @@ export type ParamterWithData = Record<string, (
 
 export type JResponse = number | boolean | string | null | unknown[] | undefined;
 
-export type ProviderType = (parameters: ParamterWithData, ref: {
+export type ProviderType = (parameters: ParameterWithData, ref: {
     state: State;
     controller?: ReadableStreamController<State>;
     step: CallStep;

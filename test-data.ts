@@ -73,13 +73,13 @@ export function register(jcall: JsonCalls) {
             },
             {
                 id: "buildIn.if",
-                paramter: [ { type: "boolean", name: "value", value: { type: "response", id: "0" } } ],
+                parameter: [ { type: "boolean", name: "value", value: { type: "response", id: "0" } } ],
                 condition: { id: "buildIn.falsy" },
                 branch: {
                     true: [
                         {
                             id: "buildIn.repeat",
-                            paramter: [
+                            parameter: [
                                 { type: "number", name: "count", value: 5 }
                             ],
                             branch: {
@@ -88,12 +88,12 @@ export function register(jcall: JsonCalls) {
                                 ]
                             }
                         },
-                        { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: true } ] }
+                        { id: "native.lamp", parameter: [ { type: "boolean", name: "value", value: true } ] }
                     ],
                     false: [
                         {
                             id: "buildIn.try",
-                            paramter: [
+                            parameter: [
                                 {
                                     name: "tries",
                                     type: "number",
@@ -106,7 +106,7 @@ export function register(jcall: JsonCalls) {
                                 ]
                             }
                         },
-                        { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: false } ] }
+                        { id: "native.lamp", parameter: [ { type: "boolean", name: "value", value: false } ] }
                     ]
                 }
             }
@@ -123,27 +123,27 @@ export function register(jcall: JsonCalls) {
             },
             {
                 id: "buildIn.if",
-                paramter: [ { type: "boolean", name: "value", value: { type: "response", id: "0" } } ],
+                parameter: [ { type: "boolean", name: "value", value: { type: "response", id: "0" } } ],
                 condition: { id: "buildIn.truthy" },
                 branch: {
                     true: [
-                        { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: false } ] },
+                        { id: "native.lamp", parameter: [ { type: "boolean", name: "value", value: false } ] },
                         {
                             id: "buildIn.sleep",
-                            paramter: [
+                            parameter: [
                                 { name: "amount", type: "number", value: 1 }
                             ]
                         },
-                        { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: true } ] },
+                        { id: "native.lamp", parameter: [ { type: "boolean", name: "value", value: true } ] },
                         {
                             id: "buildIn.sleep",
-                            paramter: [
+                            parameter: [
                                 { name: "amount", type: "number", value: 0.5 }
                             ]
                         },
-                        { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: false } ] }
+                        { id: "native.lamp", parameter: [ { type: "boolean", name: "value", value: false } ] }
                     ],
-                    false: [ { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: true } ] } ]
+                    false: [ { id: "native.lamp", parameter: [ { type: "boolean", name: "value", value: true } ] } ]
                 }
             }
         ]
@@ -159,24 +159,24 @@ export function register(jcall: JsonCalls) {
         steps: [
             {
                 id: "native.lamp",
-                paramter: [
+                parameter: [
                     { type: "boolean", name: "value", value: false }
                 ]
             },
             {
                 id: "buildIn.variable",
-                paramter: [
+                parameter: [
                     { type: "number", name: "source", value: { type: "response", id: "0" } },
                     { type: "string", name: "target", value: "state" }
                 ]
             },
             {
                 id: "buildIn.if",
-                paramter: [ { type: "boolean", name: "value", value: { type: "variable", id: "state" } } ],
+                parameter: [ { type: "boolean", name: "value", value: { type: "variable", id: "state" } } ],
                 condition: { id: "buildIn.truthy" },
                 branch: {
-                    true: [ { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: false } ] } ],
-                    false: [ { id: "native.lamp", paramter: [ { type: "boolean", name: "value", value: true } ] } ]
+                    true: [ { id: "native.lamp", parameter: [ { type: "boolean", name: "value", value: false } ] } ],
+                    false: [ { id: "native.lamp", parameter: [ { type: "boolean", name: "value", value: true } ] } ]
                 }
             }
         ]
@@ -189,19 +189,19 @@ export function register(jcall: JsonCalls) {
         steps: [
             {
                 id: "native.lamp",
-                paramter: [
+                parameter: [
                     { type: "boolean", name: "value", value: true }
                 ]
             },
             {
                 id: "buildIn.sleep",
-                paramter: [
+                parameter: [
                     { name: "amount", type: "number", value: 2 }
                 ]
             },
             {
                 id: "native.lamp",
-                paramter: [
+                parameter: [
                     { type: "boolean", name: "value", value: false }
                 ]
             },
