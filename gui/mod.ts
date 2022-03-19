@@ -19,13 +19,10 @@ WebGen({
 const jcall = new JsonCalls()
 
 register(jcall);
-const defaultTabs: TabEntry[] = [
-    "search-tab"
-];
 
 const ViewState = View<State>(({ state, update }) => Vertical(
     Horizontal(
-        ...(state.tabs ?? []).map(renderNavigationEntry(state, update)),
+        (state.tabs ?? []).map(renderNavigationEntry(state, update)),
         Icon("add").addClass("new-tab").onClick(() => {
             update({
                 selectedTab: state.tabs?.length,
@@ -45,38 +42,37 @@ const ViewState = View<State>(({ state, update }) => Vertical(
 )
     .setPadding("9px 13px")
     .setGap(".7rem"))
+    .change(({ update }) => update({ selectedTab: 0, tabs: [ "search-tab" ] }))
     .appendOn(document.body);
 
-ViewState.unsafeViewOptions().update({
-    selectedTab: 0,
-    tabs: defaultTabs
-});
 async function startProcess(id: ActionId) {
-    let state = ViewState.unsafeViewOptions();
+    let state = ViewState.viewOptions();
     state.update({ runner: { ...state.state.runner, [ id ]: [] } });
     for await (const response of streamAsyncIterable(jcall.streamRun(id))) {
-        const state = ViewState.unsafeViewOptions();
+        console.log(response);
+        const state = ViewState.viewOptions();
         state.update({ runner: { ...state.state.runner, [ id ]: [ ...(state.state.runner?.[ id ] ?? []), response ] } });
     }
     await (new Promise((done) => setTimeout(done, 200)))
-    state = ViewState.unsafeViewOptions();
+    state = ViewState.viewOptions();
     const newState = { ...state.state.runner };
     delete newState[ id! ];
     state.update({ runner: { ...newState } });
 }
 function renderNavigationEntry(state: Partial<State>, update: (data: Partial<State>) => void): (value: TabEntry, index: number, array: TabEntry[]) => CustomComponent {
-    return (entry, index) => {
+    return (actionId, index) => {
         const main = (state.selectedTab ?? 0) == index;
         let element: Component;
         const div = createElement("div")
         const progress = Custom(div).addClass("progressbar")
-        if (entry == "search-tab") element = Card(headless(PlainText("Search"))).addClass("action", "full");
+        if (actionId == "search-tab") element = Card(headless(PlainText("Search"))).addClass("action", "full");
         else {
-            const [ actionId, action ] = jcall.getUserActionIndex(entry)!;
+            const action = jcall.metaFromId(actionId)!;
             const exec = actionId ? state.runner?.[ actionId ] : undefined;
             if (exec && exec.length != 0) {
                 const lastElement = exec.at(-1)!;
                 const offset = lastElement._status !== undefined ? lastElement._status : 0;
+                console.log(`${percent(1 - (1 - offset + lastElement._callsLeft) / exec[ 0 ]._callsLeft)}%`);
                 div.style.width = `${percent(1 - (1 - offset + lastElement._callsLeft) / exec[ 0 ]._callsLeft)}%`;
             }
             element = SimpleAction(jcall.traceform(action), "full", true, [
@@ -92,12 +88,12 @@ function renderNavigationEntry(state: Partial<State>, update: (data: Partial<Sta
             return element
                 .addPrefix(progress).setGrow(3)
 
-        if (entry == "search-tab")
+        if (actionId == "search-tab")
             return element
                 .setGrow(1)
                 .onClick(() => update({ selectedTab: index }))
 
-        return SimpleAction(jcall.getUserActionIndex(entry)![ 1 ], "full")
+        return SimpleAction(jcall.metaFromId(actionId)!, "full")
             .setGrow(1)
             .addPrefix(progress)
             .onClick(() => update({ selectedTab: index }))

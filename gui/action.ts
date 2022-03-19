@@ -17,11 +17,11 @@ export function SimpleAction({ icon, color, displayText }: Action, type: ActionT
                 ? Icon("disabled_by_default")
                     .addClass("close-button", "action-icon")
                 : null,
-            ...renderRichTitle([ chooseTranslation(displayText) ]),
+            renderRichTitle([ { type: "text", value: chooseTranslation(displayText) } ]),
             Spacer(),
             Vertical(
                 type == "normal" && closeable ? Icon("cancel").addClass("close-button") : null,
-                ...actions
+                actions
             )
                 .setDirection("row")
                 .addClass("actions")

@@ -50,3 +50,45 @@ html {
     font-size: 11px;
     font-weight: 500;
 }
+
+@media (max-width: 900px) {
+    .container>.spacer:last-child {
+        display: none;
+    }
+}
+
+@media (max-width: 800px) {
+    .container>* {
+        flex-basis: 80%;
+    }
+
+    .sidepanel {
+        position: fixed;
+        z-index: 3;
+        width: 70%;
+        box-shadow: 0px 1px 19px 4px #0000004d;
+        top: calc(100% - 3.6rem);
+    }
+
+    .container {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 500px) {
+    .container>* {
+        flex-basis: 100%;
+    }
+
+    .sidepanel {
+        width: 95%;
+    }
+
+    .container {
+        flex-wrap: wrap;
+    }
+
+    .container>.spacer {
+        display: none;
+    }
+}

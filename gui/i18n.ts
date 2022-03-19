@@ -3,6 +3,7 @@ const language: Language = "de";
 export const translation = {
     "unknown": { de: "Unbenannt", en: "Unknown" },
     "buildIn.if.false": { de: "Sonst", en: "Else" },
+    "condition": { de: "Bedingung", en: "Condition" },
     "hint.values": { de: "", en: "" },
     "hint.secounds": { de: " Sekunden", en: " Secounds" },
     "hint.secound": { de: " Sekunde", en: " Secound" },
@@ -19,4 +20,8 @@ export function chooseTranslation(data?: Record<Language, string> | string): str
 }
 export const translate = (key: string) => {
     return translation[ key as keyof typeof translation ] || { de: `{${key}}`, en: `{${key}}` }
+}
+export const defaultOrTranslation = (data?: string | Record<Language, string>): string => {
+    if (typeof data == "string") return data;
+    return chooseTranslation(data);
 }

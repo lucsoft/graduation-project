@@ -1,19 +1,16 @@
 import { Component, Card, headless, Horizontal, Icon, Spacer, Vertical, PlainText, Button, Color, ButtonStyle, createElement, Custom } from "../../WebGen/mod.ts";
-import { isCallStep, toFirstUpperCase } from "../helper.ts";
+import { toFirstUpperCase } from "../helper.ts";
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
-import { Action, CallStep, CallParameters, ActionId } from "../json-calls-protocol/spec.ts";
-import { choose, chooseTranslation, translate } from "./i18n.ts";
+import { CallStep, ActionTuple } from "../json-calls-protocol/spec.ts";
+import { choose, chooseTranslation, defaultOrTranslation, translate, translation } from "./i18n.ts";
 import './style/rich-elements.css';
 import { State, TitleType } from "./types.ts";
 
-export function RichAction(state: Partial<State>, jcall: JsonCalls, step: Action, caller: CallStep, main: ActionId, closeable = true, actions: Component[] = []) {
-    const data = choose(step.inlineText)?.
-        map(entry => typeof entry == "string" ? entry : (entry === -1 ? caller.condition : { ...caller.paramter![ entry ], hint: step.parameters?.[ entry ].hint })) as TitleType ?? [ typeof step.displayText == "string" ? step.displayText : choose(step.displayText) ];
+export function RichAction(state: Partial<State>, jcall: JsonCalls, Action: ActionTuple, caller: CallStep, main: ActionTuple, closeable = true, actions: Component[] = []) {
 
     const div = createElement("div")
     const progress = Custom(div).addClass("progressbar")
     const tracer = getTracer(state, main);
-
     if (caller.trace === tracer?._masterTrace) {
         div.style.width = `${(tracer?._status ?? 1) * 100}%`;
     }
@@ -22,10 +19,10 @@ export function RichAction(state: Partial<State>, jcall: JsonCalls, step: Action
     }
     return Card(headless(
         Horizontal(
-            Icon(step.icon)
+            Icon(Action[ 1 ].icon)
                 .addClass("action-icon", "main")
-                .addClass(`color-${step.color ?? "gray"}`),
-            ...renderRichTitle(data, main, jcall, state),
+                .addClass(`color-${Action[ 1 ].color ?? "gray"}`),
+            ...renderRichTitle(mapDataToRichTitle(Action, caller), main, jcall, state),
             Spacer(),
             Vertical(
                 closeable ? Icon("cancel").addClass("close-button") : null,
@@ -41,54 +38,71 @@ export function RichAction(state: Partial<State>, jcall: JsonCalls, step: Action
         .addClass("action", "normal", (caller.trace === tracer?._trace || caller.trace === tracer?._masterTrace ? "progress" : "ignore"));
 }
 
-export const renderRichTitle = (title: TitleType, main?: ActionId, jcall?: JsonCalls, state?: Partial<State>) => title.map(x => typeof x == "string" ? PlainText(x).addClass("title") : renderInline(x, main, jcall, state).addClass("element"))
-const getTracer = (state: Partial<State>, main: string) => state.runner?.[ main ]?.at(-1)
+export const renderRichTitle = (title: TitleType[], main?: ActionTuple, jcall?: JsonCalls, state?: Partial<State>) => title.map(x => renderInline(x, main, jcall, state).addClass("element"))
+const getTracer = (state: Partial<State>, [ actionId ]: ActionTuple) => state.runner?.[ actionId ]?.at(-1)
 
-function renderInline(x: CallParameters | CallStep, main?: ActionId, jcall?: JsonCalls, state?: Partial<State>) {
-    if (x == null) throw new Error("CallParamter is null");
-    if (isCallStep(x)) {
-        return Button(chooseTranslation(jcall!.meta(x)?.displayText))
-            .setColor(Color.Colored)
-            .setStyle(getTracer(state!, main!)?._trace === x.trace ? ButtonStyle.Normal : ButtonStyle.Secondary)
+function mapDataToRichTitle([ _, step ]: ActionTuple, caller: CallStep) {
+    const fallback = step.inlineText ? choose(step.inlineText)! : [ defaultOrTranslation(step.displayText) ];
+    const data = fallback.map<TitleType>(e => {
+        if (typeof e == "string")
+            return { type: "text", value: e };
+        if (e == -1)
+            return { type: "condition", value: caller.condition };
+        return { type: "parameter", value: { ...caller.parameter![ e ], hint: step.parameters?.[ e ].hint } };
+    });
+    return data;
+}
+
+function renderInline({ type, value }: TitleType, main?: ActionTuple, jcall?: JsonCalls, state?: Partial<State>) {
+    if (type == "condition") {
+        const display = jcall!.meta(value)?.displayText;
+        return Button(typeof display == "string" ? display : choose(display ?? translation.condition)!)
+            .setColor(value ? Color.Colored : Color.Grayscaled)
+            .onClick(() => alert("*Open Edit Menu for Conditions*"))
+            .setStyle(getTracer(state!, main!)?._trace === value?.trace && value?.trace ? ButtonStyle.Normal : ButtonStyle.Secondary)
     }
-    if (typeof x.value == "boolean")
-        return Button(choose(translate(`hint.${x.hint ?? "power"}.${x.value.toString()}`))!)
-            .setColor(Color.Colored)
-            .setStyle(ButtonStyle.Secondary);
-    if (typeof x.value == "number")
-        return Button(`${x.value.toString()}${choose(translate(`hint.${x.hint}${x.value == 1 ? "" : "s"}`))}`)
-            .setColor(Color.Colored)
-            .setStyle(ButtonStyle.Secondary);
-    if (typeof x.value == "string")
-        return Button(toFirstUpperCase(x.value))
-            .setColor(Color.Colored)
-            .setStyle(ButtonStyle.Secondary)
-    if (Array.isArray(x.value))
-        return PlainText(JSON.stringify(x)).setFont(0.6, 500);
-    if (typeof x.value == "object" && jcall && main) {
-        if (x.value.type === "variable")
-            return Button(toFirstUpperCase(x.value.id))
-                .addPrefix(
-                    Icon(jcall.metaFromId("buildIn.variable")?.icon!)
-                        .addClass("action-icon", "main")
-                        .addClass(`color-${jcall.metaFromId("buildIn.variable")?.color ?? "gray"}`)
-                )
+    if (type == "text")
+        return PlainText(value).addClass("title");
+    if (type == "parameter") {
+        if (typeof value.value == "boolean")
+            return Button(choose(translate(`hint.${value.hint ?? "power"}.${value.value.toString()}`))!)
                 .setColor(Color.Colored)
                 .setStyle(ButtonStyle.Secondary);
-        if (x.value.type === "response") {
-            const targetStep = jcall.find(jcall.metaFromId(main)?.steps, x.value.id);
-            const meta = jcall.meta(targetStep);
-            if (targetStep && meta)
-                return Button(chooseTranslation(meta.displayText))
+        if (typeof value.value == "number")
+            return Button(`${value.value.toString()}${choose(translate(`hint.${value.hint}${value.value == 1 ? "" : "s"}`))}`)
+                .setColor(Color.Colored)
+                .setStyle(ButtonStyle.Secondary);
+        if (typeof value.value == "string")
+            return Button(toFirstUpperCase(value.value))
+                .setColor(Color.Colored)
+                .setStyle(ButtonStyle.Secondary)
+        if (Array.isArray(value.value))
+            return PlainText(JSON.stringify(value)).setFont(0.6, 500);
+        if (typeof value.value == "object" && jcall && main) {
+            if (value.value.type === "variable")
+                return Button(toFirstUpperCase(value.value.id))
                     .addPrefix(
-                        Icon(meta.icon)
+                        Icon(jcall.metaFromId("buildIn.variable")?.icon!)
                             .addClass("action-icon", "main")
-                            .addClass(`color-${meta.color}`)
+                            .addClass(`color-${jcall.metaFromId("buildIn.variable")?.color ?? "gray"}`)
                     )
                     .setColor(Color.Colored)
-                    .setStyle(ButtonStyle.Secondary)
+                    .setStyle(ButtonStyle.Secondary);
+            if (value.value.type === "response") {
+                const targetStep = jcall.find(main[ 1 ]?.steps, value.value.id);
+                const meta = jcall.meta(targetStep);
+                if (targetStep && meta)
+                    return Button(chooseTranslation(meta.displayText))
+                        .addPrefix(
+                            Icon(meta.icon)
+                                .addClass("action-icon", "main")
+                                .addClass(`color-${meta.color}`)
+                        )
+                        .setColor(Color.Colored)
+                        .setStyle(ButtonStyle.Secondary)
 
+            }
         }
     }
-    return PlainText(JSON.stringify(x)).setFont(0.6, 500);
+    return PlainText(JSON.stringify(value)).setFont(0.6, 500);
 }

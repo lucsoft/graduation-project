@@ -1,20 +1,42 @@
-import { Button, ButtonStyle, Card, Color, Component, Grid, headless, Horizontal, Input, PlainText, Spacer, Vertical } from "../../WebGen/mod.ts";
+import { Button, ButtonStyle, Card, Color, Component, ComponentArray, Grid, headless, Horizontal, Input, PlainText, Spacer, Vertical, View } from "../../WebGen/mod.ts";
 import { toFirstUpperCase } from "../helper.ts";
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
-import { ActionId, CallStep } from "../json-calls-protocol/spec.ts";
+import { Action, ActionId, ActionTuple, CallStep } from "../json-calls-protocol/spec.ts";
 import { SimpleAction } from "./action.ts";
-import { choose, translate } from "./i18n.ts";
+import { Movable } from "./dragAndDrop.ts";
+import { choose, defaultOrTranslation, translate } from "./i18n.ts";
 import { RichAction } from "./richAction.ts";
 import { State } from "./types.ts";
 
+// function List<Type, Key = undefined>(_source: undefined | Map<Key, Type> | Type[], _handler: (data: Key extends undefined ? Type : [ Key, Type ]) => any): Component[] {
+//     throw new Error("Function not implemented.");
+// }
+
+
 export const EditorView = (jcall: JsonCalls, state: Partial<State>, _update: (data: Partial<State>) => void) => {
-    const Action = jcall.getUserActionIndex(state.tabs?.[ state.selectedTab ?? 0 ] as number);
-    if (!Action) return null;
+    const actionId = state.tabs?.[ state.selectedTab ?? 0 ] as ActionId;
+    const action = jcall.metaFromId(actionId);
+    const actionList = View<{ actions: Map<ActionId, Action>, query: string }>(({ state }) => Vertical(
+        (state.actions ? Array.from(state.actions.entries())
+            .filter(([ _, x ]) => defaultOrTranslation(x.displayText).toLowerCase().startsWith(state.query?.toLowerCase() ?? ""))
+            .sort(([ x ]) => {
+                if (x.startsWith("user")) return -1;
+                if (x.startsWith("buildIn")) return 0;
+                return 1;
+            })
+            .filter(step => step[ 1 ].category !== "conditions")
+            .map(([ id, action ]) => Movable({ id }, SimpleAction(action, "small", false))) : []),
+    ).setGap("8px"));
+
+    if (!action) return null;
     return Horizontal(
         Card(headless(
             Vertical(
                 Input({
-                    placeholder: "Suchbegriff"
+                    placeholder: "Suchbegriff",
+                    liveOn: (val) => actionList
+                        .viewOptions()
+                        .update({ query: val })
                 }),
                 Grid(
                     Button("Alle Aktionen")
@@ -49,36 +71,31 @@ export const EditorView = (jcall: JsonCalls, state: Partial<State>, _update: (da
                     .setGap("0 1.5rem")
                     .setPadding("18px 0")
                     .setEvenColumns(3),
-                Vertical(
-                    ...(Array.from([
-                        ...jcall.userActions.entries(),
-                        ...jcall.buildInActions.entries(),
-                        ...jcall.nativeActions.entries()
-                    ])
-                        .map(([ _, step ]) => step)
-                        .filter(step => step.category !== "conditions")
-                        .map(step => SimpleAction(step, "small", false))),
-                ).setGap("8px")
+                actionList
+                    .change(({ update }) => update({
+                        actions: jcall.actions
+                    }))
+                    .asComponent()
             ).setPadding("10px")
         ))
             .addClass("sidepanel")
             .setDirection("column")
             .setAlign("stretch"),
         Spacer(),
-        Action[ 1 ].steps === "native"
+        action.steps === "native"
             ? PlainText("Can't edit a Native Action")
             : Vertical(
-                ...Action[ 1 ].steps.map(x => renderCallStep(state, jcall, x, Action[ 0 ])).flat(),
+                ...action.steps.map(x => renderCallStep(state, jcall, x, [ actionId, action ])).flat(),
             ).setGap("14px").setWidth("45%"),
         Spacer()
     ).addClass("container");
 };
 
-function renderCallStep(state: Partial<State>, jcall: JsonCalls, call: CallStep, main: ActionId) {
+function renderCallStep(state: Partial<State>, jcall: JsonCalls, call: CallStep, main: ActionTuple) {
     const step = jcall.meta(call);
-    const list: (Component | null)[] = [ step ? RichAction(state, jcall, step, call, main) : incompatibleFunction(call.id) ];
+    const list: ComponentArray = [ step ? Movable(call, RichAction(state, jcall, [ call.id, step ], call, main)) : incompatibleFunction(call.id) ];
     if (call.branch)
-        list.push(...Object.entries(call.branch)
+        list.push(Object.entries(call.branch)
             .map(([ id, data ]) => [
                 step?.branch?.hideFirstStep === true && id == Object.keys(call.branch ?? {})[ 0 ]
                     ? null
