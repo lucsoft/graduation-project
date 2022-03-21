@@ -17,7 +17,7 @@ export const EditorView = (jcall: JsonCalls, state: Partial<State>, _update: (da
             .filter(([ _, x ]) => defaultOrTranslation(x.displayText).toLowerCase().startsWith(state.query?.toLowerCase() ?? ""))
             .sort(sortByRelevance())
             .filter(step => step[ 1 ].category !== "conditions")
-            .map(([ id, action ]) => Movable({ id, branch: branches(jcall, id) }, SimpleAction(action, "small", false))) : []),
+            .map(([ id, action ]) => Movable({ id, branch: branches(jcall, id) }, SimpleAction(action, "small", false), false)) : []),
     ).setGap("8px"));
 
     if (!action) return null;
@@ -77,7 +77,7 @@ export const EditorView = (jcall: JsonCalls, state: Partial<State>, _update: (da
         action.steps === "native"
             ? PlainText("Can't edit a Native Action")
             : Vertical(
-                Dropable((data) => jcall.addFirstStep(actionId, data)),
+                Dropable((data, del) => jcall.addFirstStep(actionId, data, del)),
                 ...action.steps.map(x => renderCallStep(state, jcall, x, [ actionId, action ])).flat()
             ).setWidth("45%"),
         Spacer()
@@ -103,7 +103,7 @@ function renderCallStep(state: Partial<State>, jcall: JsonCalls, call: CallStep,
                         displayText: choose(step.branch?.otherBlocks?.[ id ]) ?? toFirstUpperCase(id)
                     }, "normal"),
                 Horizontal(
-                    Dropable((dropData) => jcall.addFirstBranchStep(main[ 0 ], dropData, call.trace!, id)),
+                    Dropable((dropData, deleteOld) => jcall.addFirstBranchStep(main[ 0 ], dropData, call.trace!, id, deleteOld)),
                     ...data.map(x => renderCallStep(state, jcall, x, main)).flat()
                 )
                     .setPadding("0 0 0 1rem")
@@ -117,6 +117,6 @@ function renderCallStep(state: Partial<State>, jcall: JsonCalls, call: CallStep,
                 displayText: choose(step.branch?.endBlock)
             }, "normal")
         )
-    list.push(Dropable((data) => jcall.addStepAfter(main[ 0 ], data, call.trace!)));
+    list.push(Dropable((data, deleteOld) => jcall.addStepAfter(main[ 0 ], data, call.trace!, deleteOld)));
     return list;
 }

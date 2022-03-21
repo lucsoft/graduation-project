@@ -86,13 +86,10 @@ export class JsonCalls {
                 const element = steps[ index ];
                 if (typeof element == "string") continue;
                 element.trace = layer + (index + offset).toString();
-                recusion(`${element.trace}.`, [ element.condition! ].filter(x => x))
-                if (element.branch) {
-                    const branches = Object.values(element.branch);
-                    for (let innerIndex = 0; innerIndex < branches.length; innerIndex++) {
-                        const innerElement = branches[ innerIndex ];
-                        recusion(`${element.trace}.${element.condition ? innerIndex + 1 : innerIndex}.`, innerElement, innerIndex + 1);
-                    }
+                const branches = Object.values(element.branch ?? {});
+                for (let innerIndex = 0; innerIndex < branches.length; innerIndex++) {
+                    const innerElement = branches[ innerIndex ];
+                    recusion(`${element.trace}.${innerIndex + 1}.`, innerElement, offset);
                 }
             }
         }
@@ -103,35 +100,47 @@ export class JsonCalls {
         if (typeof data === "string") return true;
         return false;
     }
-    addFirstStep(_actionId: ActionId, step: CallStep): void {
-        const newVariable = this.actions.get(_actionId);
+    deleteStep(id: ActionId, step: CallStep) {
+        const action = this.actions.get(id);
+        if (!action?.steps) return;
+        if (this.isNative(action.steps)) return;
+        const from = step.trace?.split('.').at(-1)!;
+        this.traceFind(action.steps, step.trace!).splice(parseInt(from), 1)
+        this.traceform(action);
+        dispatchEvent(new Event("actions-update"));
+    }
+    addFirstStep(id: ActionId, step: CallStep, deleteOld: boolean): void {
+        const newVariable = this.actions.get(id);
         if (!newVariable?.steps) return;
         if (this.isNative(newVariable.steps)) return;
+        if (deleteOld) this.deleteStep(id, step);
+
         newVariable.steps = [ step, ...newVariable.steps as unknown as CallStep[] ];
         this.traceform(newVariable);
         dispatchEvent(new Event("actions-update"));
     }
-    addFirstBranchStep(_actionId: ActionId, step: CallStep, from: Trace, branch: string): void {
-        const newVariable = this.actions.get(_actionId);
-        if (!newVariable?.steps) return;
-        if (this.isNative(newVariable.steps)) return;
+    addFirstBranchStep(id: ActionId, step: CallStep, from: Trace, branch: string, deleteOld: boolean): void {
+        const action = this.actions.get(id);
+        if (!action?.steps) return;
+        if (this.isNative(action.steps)) return;
+        if (deleteOld) this.deleteStep(id, step);
 
-        this.traceFind(newVariable.steps, from).find(x => x.trace == from)?.branch![ branch ]!
+        this.traceFind(action.steps, from).find(x => x.trace == from)?.branch![ branch ]!
             .unshift(step);
 
-        this.traceform(newVariable);
+        this.traceform(action);
         dispatchEvent(new Event("actions-update"));
-
     }
-    addStepAfter(_actionId: ActionId, step: CallStep, _id: Trace): void {
-        const newVariable = this.actions.get(_actionId);
-        if (!newVariable?.steps) return;
-        if (this.isNative(newVariable.steps)) return;
+    addStepAfter(id: ActionId, step: CallStep, from: Trace, deleteOld: boolean): void {
+        const action = this.actions.get(id);
+        if (!action?.steps) return;
+        if (this.isNative(action.steps)) return;
+        if (deleteOld) this.deleteStep(id, step);
 
-        this.traceFind(newVariable.steps, _id)
-            .splice(parseInt(_id.split('.').at(-1)!) + (_id.includes('.') ? 0 : 1), 0, step);
+        this.traceFind(action.steps, from)
+            .splice(parseInt(from.split('.').at(-1)!) + (from.includes('.') ? 0 : 1), 0, step);
 
-        this.traceform(newVariable);
+        this.traceform(action);
         dispatchEvent(new Event("actions-update"));
     }
 

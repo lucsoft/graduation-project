@@ -1,7 +1,7 @@
 import { Component, createElement, Custom } from "../../WebGen/mod.ts";
 import { CallStep } from "../json-calls-protocol/spec.ts";
 
-export function Dropable(response: (action: CallStep) => void): Component {
+export function Dropable(response: (action: CallStep, deleteOld: boolean) => void): Component {
 
     const data = createElement("div");
     data.ondragover = (ev) => {
@@ -17,7 +17,7 @@ export function Dropable(response: (action: CallStep) => void): Component {
             if (data) {
                 const parsedObject = JSON.parse(data);
                 if (Object.getOwnPropertyNames(parsedObject).includes("id"))
-                    response(parsedObject);
+                    response(parsedObject, JSON.parse(ev.dataTransfer?.getData("deleteOld") ?? "true"));
             }
         } catch (_) {
             data.classList.remove("active");
@@ -26,10 +26,11 @@ export function Dropable(response: (action: CallStep) => void): Component {
     return Custom(data).addClass("drop-area");
 }
 
-export function Movable(action: CallStep, com: Component): Component {
+export function Movable(action: CallStep, com: Component, deleteOld = true): Component {
     const data = com.draw();
     data.draggable = true;
     data.ondragstart = (drag) => {
+        drag.dataTransfer?.setData("deleteOld", deleteOld.toString());
         drag.dataTransfer?.setData("text", JSON.stringify(action));
     }
     return Custom(data);

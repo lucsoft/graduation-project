@@ -25,7 +25,10 @@ export function RichAction(state: Partial<State>, jcall: JsonCalls, Action: Acti
             ...renderRichTitle(mapDataToRichTitle(Action, jcall, caller), main, jcall, state),
             Spacer(),
             Vertical(
-                closeable ? Icon("cancel").addClass("close-button") : null,
+                !closeable ? null
+                    : Icon("cancel")
+                        .addClass("close-button")
+                        .onClick(() => jcall.deleteStep(main[ 0 ], caller)),
                 ...actions
             )
                 .setDirection("row")
@@ -68,18 +71,22 @@ function renderInline({ type, value }: TitleType, main?: ActionTuple, jcall?: Js
     if (type == "unset-parameter")
         return Button("Eingabe")
             .setColor(Color.Colored)
+            .onClick(() => alert("*Open Edit Menu for Parameter*"))
             .setStyle(ButtonStyle.Inline);
     if (type == "parameter") {
         if (typeof value.value == "boolean")
             return Button(choose(translate(`hint.${value.hint ?? "power"}.${value.value.toString()}`))!)
                 .setColor(Color.Colored)
+                .onClick(() => alert("*Open Edit Menu for Parameter*"))
                 .setStyle(ButtonStyle.Secondary);
         if (typeof value.value == "number")
             return Button(`${value.value.toString()}${choose(translate(`hint.${value.hint}${value.value == 1 ? "" : "s"}`))}`)
                 .setColor(Color.Colored)
+                .onClick(() => alert("*Open Edit Menu for Parameter*"))
                 .setStyle(ButtonStyle.Secondary);
         if (typeof value.value == "string")
             return Button(toFirstUpperCase(value.value))
+                .onClick(() => alert("*Open Edit Menu for Parameter*"))
                 .setColor(Color.Colored)
                 .setStyle(ButtonStyle.Secondary)
         if (Array.isArray(value.value))
@@ -93,6 +100,7 @@ function renderInline({ type, value }: TitleType, main?: ActionTuple, jcall?: Js
                             .addClass(`color-${jcall.metaFromId("buildIn.variable")?.color ?? "gray"}`)
                     )
                     .setColor(Color.Colored)
+                    .onClick(() => alert("*Open Edit Menu for Parameter*"))
                     .setStyle(ButtonStyle.Secondary);
             if (value.value.type === "response") {
                 const targetStep = jcall.find(main[ 1 ]?.steps, value.value.id);
@@ -104,6 +112,7 @@ function renderInline({ type, value }: TitleType, main?: ActionTuple, jcall?: Js
                                 .addClass("action-icon", "main")
                                 .addClass(`color-${meta.color}`)
                         )
+                        .onClick(() => alert("*Open Edit Menu for Parameter*"))
                         .setColor(Color.Colored)
                         .setStyle(ButtonStyle.Secondary)
 
