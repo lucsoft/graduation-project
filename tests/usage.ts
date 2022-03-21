@@ -1,5 +1,5 @@
+import { JsonCalls } from "../json-calls-protocol/mod.ts";
 import { register } from "../test-data.ts";
-import { JsonCalls } from "./mod.ts";
 
 const jcall = new JsonCalls()
 register(jcall);

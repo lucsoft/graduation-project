@@ -1,15 +1,16 @@
+import { assert, unreachable } from "https://deno.land/std@0.130.0/testing/asserts.ts";
 import { JsonCalls } from "./mod.ts";
 import { CallParameters, State } from "./spec.ts";
 
 export function registerProvider(jcall: JsonCalls) {
     jcall.provider.set("buildIn.sleep", async ({ amount }) => {
-        if (typeof amount.value != "number") throw new Error("failed");
+        assert(typeof amount.value == "number")
         await new Promise<void>(done => setTimeout(() => done(), (amount.value as number) * 1000))
         return undefined;
     })
     jcall.provider.set("buildIn.variable", (paras, { state, step: { parameter } }) => {
         const list = parameter?.map(x => paras[ x.name ]) as (CallParameters | undefined | null)[]
-        if (list.includes(undefined) || list.includes(null)) throw new Error();
+        assert(list.includes(undefined) && list.includes(null))
         return list.map((x) => state[ x!.name ] = x!.value as unknown as string)[ 0 ];
     })
     jcall.provider.set("buildIn.truthy", ({ value }) => {
@@ -19,7 +20,7 @@ export function registerProvider(jcall: JsonCalls) {
         return !value.value;
     })
     jcall.provider.set("buildIn.try", async ({ tries }, { controller, step, state }) => {
-        if (typeof tries.value != "number") throw new Error();
+        assert(typeof tries.value == "number")
         for (let index = tries.value; index != 0;) {
             for (const element of step.branch!.try) {
                 controller?.enqueue({
@@ -40,10 +41,10 @@ export function registerProvider(jcall: JsonCalls) {
             ...state,
             _trace: state._trace
         } as State);
-        throw new Error("failed");
+        unreachable();
     })
     jcall.provider.set("buildIn.repeat", async ({ count }, { controller, step: { branch, trace }, state }) => {
-        if (typeof count.value != "number") throw new Error();
+        assert(typeof count.value == "number")
         let counter = 0;
         for (let index = 0; index < count.value; index++) {
             const newVariable = Object.values(branch!.repeating);
@@ -64,10 +65,10 @@ export function registerProvider(jcall: JsonCalls) {
         return undefined;
     })
     jcall.provider.set("buildIn.if", async (_, { controller, state, step: { parameter, condition, branch } }) => {
-        if (branch === undefined || condition === undefined) throw new Error();
+        assert(branch && condition);
         await jcall.singleRun(controller, { ...condition, parameter }, state);
         const getter = state._responses.get(state._trace);
-        if (getter == null) throw new Error();
+        assert(getter);
         state._callsLeft -= (!getter ? branch.true : branch.false).map(x => jcall.getSizeInStep(x)).reduce((partialSum, a) => partialSum + a.length, 0);
         for (const iterator of getter ? branch.true : branch.false) {
             await jcall.singleRun(controller, iterator, state)

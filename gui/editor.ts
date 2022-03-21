@@ -1,3 +1,4 @@
+import { assert } from "https://deno.land/std@0.130.0/testing/asserts.ts";
 import { Button, ButtonStyle, Card, Color, ComponentArray, Grid, headless, Horizontal, Input, PlainText, Spacer, Vertical, View } from "../../WebGen/mod.ts";
 import { toFirstUpperCase } from "../helper.ts";
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
@@ -86,7 +87,7 @@ export const EditorView = (jcall: JsonCalls, state: Partial<State>, _update: (da
 
 function renderCallStep(state: Partial<State>, jcall: JsonCalls, call: CallStep, main: ActionTuple) {
     const step = jcall.meta(call);
-    if (!step) throw new Error(`${call.id} is undefined!`);
+    assert(step);
     const list: ComponentArray = [
         Movable(call, RichAction(state, jcall, [ call.id, step ], call, main))
     ];

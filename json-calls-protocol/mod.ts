@@ -4,6 +4,9 @@ import { ParameterWithData, ProviderType } from "./types.ts";
 import { CallParameters, CallStep, ActionId, Source, Action, State, Trace, Language } from "./spec.ts";
 import { registerProvider } from "./registersProvider.ts";
 import { streamAsyncIterable } from "./polyfill.ts";
+import { assert, unimplemented } from "https://deno.land/std@0.130.0/testing/asserts.ts";
+import { delay } from "https://deno.land/std@0.130.0/async/mod.ts";
+
 export class JsonCalls {
     actions = new Map<ActionId, Action>();
     provider = new Map<ActionId, ProviderType>();
@@ -21,17 +24,17 @@ export class JsonCalls {
             state._callsLeft--;
             controller?.enqueue({ ...state });
         }
-        await new Promise(done => setTimeout(done, 30)) // For Demo purpose
-        if (!step.id.includes(".")) throw new Error();
+        await delay(30) // This is complelty optional! We only do it for demo purposes
+        assert(step.id.includes("."))
         const [ type ] = step.id.split(".");
         if (type != "user") {
-            const data = this.getparameters(step.parameter, state);
+            const data = this.getParameters(step.parameter, state);
             const allparameterSet = this.metaFromId(step.id)?.parameters?.length ?? 0 === Object.keys(data).length;
-            if (!allparameterSet) throw new Error(`Wrong parameter(s) was set for Action ${step.id}.`);
+            assert(!allparameterSet, `Wrong parameter(s) was set for Action ${step.id}.`)
             const privoder = this.provider.get(step.id);
-            if (privoder == undefined) throw new Error(`Can't find step '${step.id}'`);
+            assert(privoder != undefined, `Can't find step '${step.id}'`)
             const action = privoder(data, { state, controller, step });
-            if (action === null) throw new Error(`${step.id} failed with null!`);
+            assert(action === null, `${step.id} failed with null!`);
             state._responses.set(state._trace, await action);
             return;
         }
@@ -39,9 +42,9 @@ export class JsonCalls {
     }
 
     streamRun(id: ActionId) {
-        if (!id.startsWith("user.")) throw new Error("Not starting with user.");
+        assert(id.startsWith("user."), "Not starting with user.")
         const step = this.actions.get(id);
-        if (step === undefined || step.steps === undefined || step.steps === "native") throw new Error(`Can't StreamRun ${id}`)
+        assert(step?.steps === undefined && step?.steps === "native")
         const state = {
             ...step.variables ?? {},
             _trace: "",
@@ -76,11 +79,11 @@ export class JsonCalls {
         lastLayer = lastLayer.branch![ Object.keys(lastLayer.branch!)[ index[ layer++ ] - 1 ] ];
         layer++;
         if (index.length == 7) return lastLayer;
-        throw new Error("not implemented")
+        unimplemented()
     }
 
     traceform(data: Action) {
-        if (typeof data.steps == "string") throw new Error("Cannot tracefrom a native Action");
+        assert(typeof data.steps != "string")
         const recusion = (layer: string, steps: CallStep[], offset = 0) => {
             for (let index = 0; index < steps.length; index++) {
                 const element = steps[ index ];
@@ -144,7 +147,7 @@ export class JsonCalls {
         dispatchEvent(new Event("actions-update"));
     }
 
-    getparameters(data: CallParameters[] | undefined, state: State): ParameterWithData {
+    getParameters(data: CallParameters[] | undefined, state: State): ParameterWithData {
         return data ? Object.fromEntries(data.map(({ name, type, value, hint }) => [ name, { type, value: this.getDataFromSource(value, state), hint } ])) : {};
     }
     find(data: "native" | CallStep[] | undefined, trace: Trace): undefined | CallStep {
@@ -167,12 +170,12 @@ export class JsonCalls {
         if (!Array.isArray(data) && typeof data === "object")
             switch (data.type) {
                 case "variable":
-                    if (!Object.hasOwn(state, data.id)) throw new Error();
+                    assert(Object.hasOwn(state, data.id))
                     return state[ data.id ];
                 case "parameter":
-                    throw new Error("not implemented")
+                    return unimplemented();
                 case "response": {
-                    if (!state._responses.has(data.id)) throw new Error();
+                    assert(state._responses.has(data.id))
                     return state._responses.get(data.id);
                 }
             }
