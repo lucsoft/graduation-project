@@ -25,6 +25,17 @@
     background-color: rgba(22, 207, 6, 0.2);
 }
 
+.drop-area {
+    height: calc(14px + 5px);
+    transition: all 150ms linear 50ms;
+    margin: -5px 0;
+    z-index: 1;
+}
+
+.drop-area.active {
+    height: calc(14px + 36px + 14px);
+}
+
 /**
 * Action Full
 */

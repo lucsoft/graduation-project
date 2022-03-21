@@ -3,15 +3,11 @@ import { toFirstUpperCase } from "../helper.ts";
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
 import { Action, ActionId, ActionTuple, CallStep } from "../json-calls-protocol/spec.ts";
 import { SimpleAction } from "./action.ts";
-import { Movable } from "./dragAndDrop.ts";
+import { Dropable, Movable } from "./dragAndDrop.ts";
 import { choose, defaultOrTranslation, translate } from "./i18n.ts";
+import { branches, sortByRelevance } from "./math.ts";
 import { RichAction } from "./richAction.ts";
 import { State } from "./types.ts";
-
-// function List<Type, Key = undefined>(_source: undefined | Map<Key, Type> | Type[], _handler: (data: Key extends undefined ? Type : [ Key, Type ]) => any): Component[] {
-//     throw new Error("Function not implemented.");
-// }
-
 
 export const EditorView = (jcall: JsonCalls, state: Partial<State>, _update: (data: Partial<State>) => void) => {
     const actionId = state.tabs?.[ state.selectedTab ?? 0 ] as ActionId;
@@ -19,13 +15,9 @@ export const EditorView = (jcall: JsonCalls, state: Partial<State>, _update: (da
     const actionList = View<{ actions: Map<ActionId, Action>, query: string }>(({ state }) => Vertical(
         (state.actions ? Array.from(state.actions.entries())
             .filter(([ _, x ]) => defaultOrTranslation(x.displayText).toLowerCase().startsWith(state.query?.toLowerCase() ?? ""))
-            .sort(([ x ]) => {
-                if (x.startsWith("user")) return -1;
-                if (x.startsWith("buildIn")) return 0;
-                return 1;
-            })
+            .sort(sortByRelevance())
             .filter(step => step[ 1 ].category !== "conditions")
-            .map(([ id, action ]) => Movable({ id }, SimpleAction(action, "small", false))) : []),
+            .map(([ id, action ]) => Movable({ id, branch: branches(jcall, id) }, SimpleAction(action, "small", false))) : []),
     ).setGap("8px"));
 
     if (!action) return null;
@@ -85,8 +77,9 @@ export const EditorView = (jcall: JsonCalls, state: Partial<State>, _update: (da
         action.steps === "native"
             ? PlainText("Can't edit a Native Action")
             : Vertical(
-                ...action.steps.map(x => renderCallStep(state, jcall, x, [ actionId, action ])).flat(),
-            ).setGap("14px").setWidth("45%"),
+                Dropable((data) => jcall.addFirstStep(actionId, data)),
+                ...action.steps.map(x => renderCallStep(state, jcall, x, [ actionId, action ])).flat()
+            ).setWidth("45%"),
         Spacer()
     ).addClass("container");
 };
@@ -100,13 +93,13 @@ function renderCallStep(state: Partial<State>, jcall: JsonCalls, call: CallStep,
                 step?.branch?.hideFirstStep === true && id == Object.keys(call.branch ?? {})[ 0 ]
                     ? null
                     : SimpleAction({ icon: step?.icon!, steps: "native", category: undefined, color: step?.color!, displayText: choose(step?.branch?.otherBlocks?.[ id ]) ?? toFirstUpperCase(id) }, "normal"),
-                Horizontal(...data.map(x => renderCallStep(state, jcall, x, main)).flat())
+                Horizontal(Dropable((dropData) => jcall.addFirstBranchStep(main[ 0 ], dropData, call.trace!, id)), ...data.map(x => renderCallStep(state, jcall, x, main)).flat())
                     .setPadding("0 0 0 1rem")
-                    .setGap("10px")
                     .setDirection("column")
             ]).flat(),
             SimpleAction({ icon: step?.icon!, color: step?.color!, category: undefined, steps: "native", displayText: choose(step?.branch?.endBlock) }, "normal")
         )
+    list.push(Dropable((data) => jcall.addStepAfter(main[ 0 ], data, call.trace!)));
     return list;
 }
 

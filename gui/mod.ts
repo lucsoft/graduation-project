@@ -9,7 +9,7 @@ import { JsonCalls } from "../json-calls-protocol/mod.ts";
 import { register } from "../test-data.ts";
 import { streamAsyncIterable } from "../json-calls-protocol/polyfill.ts";
 import { ActionId } from "../json-calls-protocol/spec.ts";
-import { percent } from "./math.ts";
+import { applyProgress } from "./math.ts";
 
 WebGen({
     theme: SupportedThemes.light,
@@ -45,6 +45,8 @@ const ViewState = View<State>(({ state, update }) => Vertical(
     .change(({ update }) => update({ selectedTab: 0, tabs: [ "search-tab" ] }))
     .appendOn(document.body);
 
+addEventListener("actions-update", () => ViewState.change(({ update }) => update({})));
+
 async function startProcess(id: ActionId) {
     let state = ViewState.viewOptions();
     state.update({ runner: { ...state.state.runner, [ id ]: [] } });
@@ -59,6 +61,7 @@ async function startProcess(id: ActionId) {
     delete newState[ id! ];
     state.update({ runner: { ...newState } });
 }
+
 function renderNavigationEntry(state: Partial<State>, update: (data: Partial<State>) => void): (value: TabEntry, index: number, array: TabEntry[]) => CustomComponent {
     return (actionId, index) => {
         const main = (state.selectedTab ?? 0) == index;
@@ -69,12 +72,7 @@ function renderNavigationEntry(state: Partial<State>, update: (data: Partial<Sta
         else {
             const action = jcall.metaFromId(actionId)!;
             const exec = actionId ? state.runner?.[ actionId ] : undefined;
-            if (exec && exec.length != 0) {
-                const lastElement = exec.at(-1)!;
-                const offset = lastElement._status !== undefined ? lastElement._status : 0;
-                console.log(`${percent(1 - (1 - offset + lastElement._callsLeft) / exec[ 0 ]._callsLeft)}%`);
-                div.style.width = `${percent(1 - (1 - offset + lastElement._callsLeft) / exec[ 0 ]._callsLeft)}%`;
-            }
+            applyProgress(exec, div);
             element = SimpleAction(jcall.traceform(action), "full", true, [
                 Icon(exec ? "stop" : "play_arrow")
                     .addClass("action-icon")
@@ -86,7 +84,8 @@ function renderNavigationEntry(state: Partial<State>, update: (data: Partial<Sta
 
         if (main)
             return element
-                .addPrefix(progress).setGrow(3)
+                .addPrefix(progress)
+                .setGrow(3)
 
         if (actionId == "search-tab")
             return element

@@ -33,6 +33,7 @@ export type Action = {
     color: ColorType,
     variables?: Variable,
     branch?: {
+        default: string[]
         hideFirstStep?: boolean
         otherBlocks?: Record<string, Record<Language, string>>
         endBlock: Record<Language, string>

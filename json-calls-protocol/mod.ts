@@ -4,8 +4,6 @@ import { ParameterWithData, ProviderType } from "./types.ts";
 import { CallParameters, CallStep, ActionId, Source, Action, State, Trace, Language } from "./spec.ts";
 import { registerProvider } from "./registersProvider.ts";
 import { streamAsyncIterable } from "./polyfill.ts";
-
-
 export class JsonCalls {
     actions = new Map<ActionId, Action>();
     provider = new Map<ActionId, ProviderType>();
@@ -60,6 +58,26 @@ export class JsonCalls {
             }
         }, { highWaterMark: 0 })
     }
+    traceFind(data: CallStep[], trace: Trace): CallStep[] {
+        const index = trace.split('.').map(x => parseInt(x));
+        let layer = 0;
+        let lastLayer: CallStep[] | CallStep = data;
+        // TODO: MAKE IT DRY
+        if (index.length == 1) return lastLayer;
+        lastLayer = lastLayer[ index[ layer++ ] ];
+        lastLayer = lastLayer.branch![ Object.keys(lastLayer.branch!)[ index[ layer++ ] - 1 ] ];
+        layer++;
+        if (index.length == 3) return lastLayer;
+        lastLayer = lastLayer[ index[ layer++ ] ];
+        lastLayer = lastLayer.branch![ Object.keys(lastLayer.branch!)[ index[ layer++ ] - 1 ] ];
+        layer++;
+        if (index.length == 5) return lastLayer;
+        lastLayer = lastLayer[ index[ layer++ ] ];
+        lastLayer = lastLayer.branch![ Object.keys(lastLayer.branch!)[ index[ layer++ ] - 1 ] ];
+        layer++;
+        if (index.length == 7) return lastLayer;
+        throw new Error("not implemented")
+    }
 
     traceform(data: Action) {
         if (typeof data.steps == "string") throw new Error("Cannot tracefrom a native Action");
@@ -81,11 +99,45 @@ export class JsonCalls {
         recusion("", data.steps);
         return data;
     }
+    isNative(data: "native" | CallStep[]): data is "native" {
+        if (typeof data === "string") return true;
+        return false;
+    }
+    addFirstStep(_actionId: ActionId, step: CallStep): void {
+        const newVariable = this.actions.get(_actionId);
+        if (!newVariable?.steps) return;
+        if (this.isNative(newVariable.steps)) return;
+        newVariable.steps = [ step, ...newVariable.steps as unknown as CallStep[] ];
+        this.traceform(newVariable);
+        dispatchEvent(new Event("actions-update"));
+    }
+    addFirstBranchStep(_actionId: ActionId, step: CallStep, from: Trace, branch: string): void {
+        const newVariable = this.actions.get(_actionId);
+        if (!newVariable?.steps) return;
+        if (this.isNative(newVariable.steps)) return;
+
+        this.traceFind(newVariable.steps, from).find(x => x.trace == from)?.branch![ branch ]!
+            .unshift(step);
+
+        this.traceform(newVariable);
+        dispatchEvent(new Event("actions-update"));
+
+    }
+    addStepAfter(_actionId: ActionId, step: CallStep, _id: Trace): void {
+        const newVariable = this.actions.get(_actionId);
+        if (!newVariable?.steps) return;
+        if (this.isNative(newVariable.steps)) return;
+
+        this.traceFind(newVariable.steps, _id)
+            .splice(parseInt(_id.split('.').at(-1)!) + (_id.includes('.') ? 0 : 1), 0, step);
+
+        this.traceform(newVariable);
+        dispatchEvent(new Event("actions-update"));
+    }
 
     getparameters(data: CallParameters[] | undefined, state: State): ParameterWithData {
         return data ? Object.fromEntries(data.map(({ name, type, value, hint }) => [ name, { type, value: this.getDataFromSource(value, state), hint } ])) : {};
     }
-
     find(data: "native" | CallStep[] | undefined, trace: Trace): undefined | CallStep {
         if (typeof data === "string") return undefined;
         if (!data) return undefined;

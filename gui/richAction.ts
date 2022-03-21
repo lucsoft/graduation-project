@@ -22,7 +22,7 @@ export function RichAction(state: Partial<State>, jcall: JsonCalls, Action: Acti
             Icon(Action[ 1 ].icon)
                 .addClass("action-icon", "main")
                 .addClass(`color-${Action[ 1 ].color ?? "gray"}`),
-            ...renderRichTitle(mapDataToRichTitle(Action, caller), main, jcall, state),
+            ...renderRichTitle(mapDataToRichTitle(Action, jcall, caller), main, jcall, state),
             Spacer(),
             Vertical(
                 closeable ? Icon("cancel").addClass("close-button") : null,
@@ -41,14 +41,16 @@ export function RichAction(state: Partial<State>, jcall: JsonCalls, Action: Acti
 export const renderRichTitle = (title: TitleType[], main?: ActionTuple, jcall?: JsonCalls, state?: Partial<State>) => title.map(x => renderInline(x, main, jcall, state).addClass("element"))
 const getTracer = (state: Partial<State>, [ actionId ]: ActionTuple) => state.runner?.[ actionId ]?.at(-1)
 
-function mapDataToRichTitle([ _, step ]: ActionTuple, caller: CallStep) {
+function mapDataToRichTitle([ actionId, step ]: ActionTuple, jcall: JsonCalls, caller: CallStep) {
     const fallback = step.inlineText ? choose(step.inlineText)! : [ defaultOrTranslation(step.displayText) ];
     const data = fallback.map<TitleType>(e => {
         if (typeof e == "string")
             return { type: "text", value: e };
         if (e == -1)
             return { type: "condition", value: caller.condition };
-        return { type: "parameter", value: { ...caller.parameter![ e ], hint: step.parameters?.[ e ].hint } };
+        if (caller.parameter && caller.parameter[ e ])
+            return { type: "parameter", value: { ...caller.parameter[ e ], hint: step.parameters?.[ e ].hint } };
+        return { type: "unset-parameter", value: (jcall.metaFromId(actionId)?.parameters ?? [])[ e ] };
     });
     return data;
 }
@@ -57,12 +59,16 @@ function renderInline({ type, value }: TitleType, main?: ActionTuple, jcall?: Js
     if (type == "condition") {
         const display = jcall!.meta(value)?.displayText;
         return Button(typeof display == "string" ? display : choose(display ?? translation.condition)!)
-            .setColor(value ? Color.Colored : Color.Grayscaled)
+            .setColor(Color.Colored)
             .onClick(() => alert("*Open Edit Menu for Conditions*"))
-            .setStyle(getTracer(state!, main!)?._trace === value?.trace && value?.trace ? ButtonStyle.Normal : ButtonStyle.Secondary)
+            .setStyle(value ? (getTracer(state!, main!)?._trace === value?.trace && value?.trace ? ButtonStyle.Normal : ButtonStyle.Secondary) : ButtonStyle.Inline)
     }
     if (type == "text")
         return PlainText(value).addClass("title");
+    if (type == "unset-parameter")
+        return Button("Eingabe")
+            .setColor(Color.Colored)
+            .setStyle(ButtonStyle.Inline);
     if (type == "parameter") {
         if (typeof value.value == "boolean")
             return Button(choose(translate(`hint.${value.hint ?? "power"}.${value.value.toString()}`))!)

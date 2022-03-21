@@ -59,6 +59,10 @@ export function registerMetaData(regi: Map<ActionId, Action>) {
             en: [ "When", 0, -1 ]
         },
         branch: {
+            default: [
+                "true",
+                "false"
+            ],
             hideFirstStep: true,
             otherBlocks: {
                 false: {
@@ -99,6 +103,9 @@ export function registerMetaData(regi: Map<ActionId, Action>) {
             }
         ],
         branch: {
+            default: [
+                "tries"
+            ],
             hideFirstStep: true,
             endBlock: {
                 de: 'Ende von "Versuchen"',
@@ -130,6 +137,9 @@ export function registerMetaData(regi: Map<ActionId, Action>) {
             en: "Repeat"
         },
         branch: {
+            default: [
+                "repeating"
+            ],
             hideFirstStep: true,
             endBlock: {
                 de: 'Ende von "Wiederholen"',
