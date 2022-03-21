@@ -4,7 +4,8 @@ import { ActionId, ActionTuple, CallStep, State } from "../json-calls-protocol/s
 export const percent = (ratio: number) => ratio * 100;
 
 export function branches(jcall: JsonCalls, id: ActionId): Record<string, CallStep[]> | undefined {
-    return Object.fromEntries(jcall.metaFromId(id)?.branch?.default?.map(x => [ x, [] ]) ?? []);
+    const defaulBranches = jcall.metaFromId(id)?.branch?.default;
+    return defaulBranches ? Object.fromEntries(defaulBranches?.map(x => [ x, [] ]) ?? []) : undefined;
 }
 
 export function sortByRelevance(): ((a: ActionTuple, b: ActionTuple) => number) {

@@ -1,10 +1,10 @@
-import { Button, ButtonStyle, Card, Color, Component, ComponentArray, Grid, headless, Horizontal, Input, PlainText, Spacer, Vertical, View } from "../../WebGen/mod.ts";
+import { Button, ButtonStyle, Card, Color, ComponentArray, Grid, headless, Horizontal, Input, PlainText, Spacer, Vertical, View } from "../../WebGen/mod.ts";
 import { toFirstUpperCase } from "../helper.ts";
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
 import { Action, ActionId, ActionTuple, CallStep } from "../json-calls-protocol/spec.ts";
 import { SimpleAction } from "./action.ts";
 import { Dropable, Movable } from "./dragAndDrop.ts";
-import { choose, defaultOrTranslation, translate } from "./i18n.ts";
+import { choose, defaultOrTranslation } from "./i18n.ts";
 import { branches, sortByRelevance } from "./math.ts";
 import { RichAction } from "./richAction.ts";
 import { State } from "./types.ts";
@@ -86,23 +86,37 @@ export const EditorView = (jcall: JsonCalls, state: Partial<State>, _update: (da
 
 function renderCallStep(state: Partial<State>, jcall: JsonCalls, call: CallStep, main: ActionTuple) {
     const step = jcall.meta(call);
-    const list: ComponentArray = [ step ? Movable(call, RichAction(state, jcall, [ call.id, step ], call, main)) : incompatibleFunction(call.id) ];
+    if (!step) throw new Error(`${call.id} is undefined!`);
+    const list: ComponentArray = [
+        Movable(call, RichAction(state, jcall, [ call.id, step ], call, main))
+    ];
     if (call.branch)
         list.push(Object.entries(call.branch)
             .map(([ id, data ]) => [
-                step?.branch?.hideFirstStep === true && id == Object.keys(call.branch ?? {})[ 0 ]
+                step.branch?.hideFirstStep === true && id == Object.keys(call.branch ?? {})[ 0 ]
                     ? null
-                    : SimpleAction({ icon: step?.icon!, steps: "native", category: undefined, color: step?.color!, displayText: choose(step?.branch?.otherBlocks?.[ id ]) ?? toFirstUpperCase(id) }, "normal"),
-                Horizontal(Dropable((dropData) => jcall.addFirstBranchStep(main[ 0 ], dropData, call.trace!, id)), ...data.map(x => renderCallStep(state, jcall, x, main)).flat())
+                    : SimpleAction({
+                        icon: step.icon,
+                        steps: "native",
+                        category: undefined,
+                        color: step.color,
+                        displayText: choose(step.branch?.otherBlocks?.[ id ]) ?? toFirstUpperCase(id)
+                    }, "normal"),
+                Horizontal(
+                    Dropable((dropData) => jcall.addFirstBranchStep(main[ 0 ], dropData, call.trace!, id)),
+                    ...data.map(x => renderCallStep(state, jcall, x, main)).flat()
+                )
                     .setPadding("0 0 0 1rem")
                     .setDirection("column")
             ]).flat(),
-            SimpleAction({ icon: step?.icon!, color: step?.color!, category: undefined, steps: "native", displayText: choose(step?.branch?.endBlock) }, "normal")
+            SimpleAction({
+                icon: step.icon,
+                color: step.color,
+                category: undefined,
+                steps: "native",
+                displayText: choose(step.branch?.endBlock)
+            }, "normal")
         )
     list.push(Dropable((data) => jcall.addStepAfter(main[ 0 ], data, call.trace!)));
     return list;
-}
-
-function incompatibleFunction(stepId: ActionId): Component | null {
-    return SimpleAction({ icon: "question_mark", color: "gray", category: undefined, steps: "native", displayText: translate(stepId) }, "normal");
 }
