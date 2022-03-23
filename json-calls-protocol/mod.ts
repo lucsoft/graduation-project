@@ -85,7 +85,9 @@ export class JsonCalls {
         return current;
     }
 
-    traceEditSingle(data: StepTree, trace: Trace, paramter: CallParameters) {
+    traceEditSingle(data: "native" | StepTree, trace: Trace, paramter: CallParameters) {
+        console.log(data, trace, paramter);
+        assert(!this.isNative(data))
         const old = this.traceFind(data, trace)[ parseInt(trace.split('.').at(-1)!) ].parameter ?? [];
         this.traceEdit(data, trace, (old)
             .map(x => x.name == paramter.name && x.type == paramter.type ? paramter : x))
@@ -171,7 +173,15 @@ export class JsonCalls {
     }
 
     getParameters(data: CallParameters[] | undefined, state: State): ParameterWithData {
-        return data ? Object.fromEntries(data.map(({ name, type, value, hint }) => [ name, { type, value: this.getDataFromSource(value, state), hint } ])) : {};
+        return data
+            ? Object.fromEntries(data.map(({ name, type, value, hint }) => [ name, {
+                type,
+                value: (!Array.isArray(value) && typeof value === "object")
+                    ? handleSource(value, state)
+                    : value,
+                hint
+            } ]))
+            : {};
     }
     find(data: "native" | StepTree | undefined, trace: Trace): undefined | CallStep {
         if (typeof data === "string") return undefined;
@@ -189,22 +199,6 @@ export class JsonCalls {
         return undefined;
     }
 
-    getDataFromSource(data: string | number | boolean | unknown[] | Source | undefined, state: State) {
-        if (!Array.isArray(data) && typeof data === "object")
-            switch (data.type) {
-                case "variable":
-                    assert(Object.hasOwn(state, data.id))
-                    return state[ data.id ];
-                case "parameter":
-                    return unimplemented();
-                case "response": {
-                    assert(state._responses.has(data.id))
-                    return state._responses.get(data.id);
-                }
-            }
-        else
-            return data;
-    }
     getSizeInStep(id: CallStep): unknown[] {
         const list: unknown[] = [ 1 ];
         if (id.condition) list.push(...this.getSizeInStep(id.condition));
@@ -220,5 +214,19 @@ export class JsonCalls {
 
     #isAllParamterSet(step: CallStep, data: ParameterWithData) {
         return this.metaFromId(step.id)?.parameters?.length ?? 0 === Object.keys(data).length;
+    }
+}
+
+function handleSource(data: Source, state: State) {
+    switch (data.type) {
+        case "variable":
+            assert(Object.hasOwn(state, data.id));
+            return state[ data.id ];
+        case "parameter":
+            return unimplemented();
+        case "response": {
+            assert(state._responses.has(data.id));
+            return state._responses.get(data.id);
+        }
     }
 }

@@ -60,9 +60,33 @@ export function register(jcall: JsonCalls) {
             }
         ]
     });
+    jcall.actions.set("user.empty", {
+        icon: "check_box_outline_blank",
+        color: "pink",
+        displayText: "Leerer Aktion",
+        category: undefined,
+        steps: [
+
+        ]
+    })
+    jcall.actions.set("user.sleep", {
+        icon: "check_box_outline_blank",
+        color: "pink",
+        category: undefined,
+        displayText: "Einfaches warten",
+        steps: [
+            {
+                id: "buildIn.sleep",
+                parameter: [
+                    { name: "amount", type: "number", value: 0.5 }
+                ]
+            }
+        ]
+    })
     jcall.actions.set("user.test", {
         icon: "directions_bike",
         color: "green",
+        displayText: "Komplexe Aktion",
         category: "test",
         steps: [
             {
@@ -196,7 +220,7 @@ export function register(jcall: JsonCalls) {
             {
                 id: "buildIn.sleep",
                 parameter: [
-                    { name: "amount", type: "number", value: 2 }
+                    { name: "amount", type: "number", value: 5 }
                 ]
             },
             {

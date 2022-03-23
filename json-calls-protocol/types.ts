@@ -5,6 +5,8 @@ export type ParameterWithData = Record<string, (
     | { type: "boolean", value: boolean }
     | { type: "string", value: string }
     | { type: "array", value: unknown[] }
+    | { type: "key-value", value: [ key: string, value?: number | boolean | string ][] }
+
 )>;
 
 export type JResponse = number | boolean | string | null | unknown[] | undefined;
