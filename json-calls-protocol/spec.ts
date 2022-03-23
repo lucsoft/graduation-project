@@ -8,7 +8,7 @@ export type State =
     & { _responses: Map<Trace, any>, _callsLeft: number, _trace: Trace, _masterTrace?: Trace, _status?: number };
 
 export type ActionId = `${"user" | "native" | "buildIn"}.${string}`;
-export type ActionTuple = [ ActionId, Action ];
+export type ActionTuple = { id: ActionId, data: Action };
 export type CallHints = "count" | "secound" | "power" | "lock" | "value";
 export type CallParameters =
     | { name: string; type: "number"; value?: number | Source; hint?: CallHints }

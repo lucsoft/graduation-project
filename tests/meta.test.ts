@@ -1,7 +1,7 @@
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
 import { assertEquals, assert } from "https://deno.land/std@0.130.0/testing/asserts.ts";
 
-Deno.test("Query by ActionId Works", () => {
+Deno.test("GP: Query by ActionId Works", () => {
     const jcall = new JsonCalls()
     jcall.actions.set("native.user", {
         category: "test",
@@ -17,4 +17,3 @@ Deno.test("Query by ActionId Works", () => {
     assertEquals(meta.category, "test")
     assertEquals(meta.steps, "native")
 })
-Deno.test("test", () => { })

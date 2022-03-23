@@ -10,7 +10,7 @@ export function registerProvider(jcall: JsonCalls) {
     })
     jcall.provider.set("buildIn.variable", (paras, { state, step: { parameter } }) => {
         const list = parameter?.map(x => paras[ x.name ]) as (CallParameters | undefined | null)[]
-        assert(list.includes(undefined) && list.includes(null))
+        assert(!list.includes(undefined) && !list.includes(null))
         return list.map((x) => state[ x!.name ] = x!.value as unknown as string)[ 0 ];
     })
     jcall.provider.set("buildIn.truthy", ({ value }) => {
@@ -30,7 +30,7 @@ export function registerProvider(jcall: JsonCalls) {
                     _status: (tries.value - index) / tries.value
                 } as State);
                 try {
-                    await jcall.singleRun(undefined, element, state);
+                    await jcall.run(undefined, element, state);
                     return undefined;
                 } catch (_) {
                     index--;
@@ -59,19 +59,19 @@ export function registerProvider(jcall: JsonCalls) {
                 } as State;
                 counter++;
                 controller?.enqueue(clonedState);
-                await jcall.singleRun(undefined, element, clonedState);
+                await jcall.run(undefined, element, clonedState);
             }
         }
         return undefined;
     })
     jcall.provider.set("buildIn.if", async (_, { controller, state, step: { parameter, condition, branch } }) => {
         assert(branch && condition);
-        await jcall.singleRun(controller, { ...condition, parameter }, state);
-        const getter = state._responses.get(state._trace);
-        assert(getter);
+        await jcall.run(controller, { ...condition, parameter }, state);
+        const getter = state._responses.get(condition.trace ?? unreachable());
+        assert(getter !== undefined);
         state._callsLeft -= (!getter ? branch.true : branch.false).map(x => jcall.getSizeInStep(x)).reduce((partialSum, a) => partialSum + a.length, 0);
         for (const iterator of getter ? branch.true : branch.false) {
-            await jcall.singleRun(controller, iterator, state)
+            await jcall.run(controller, iterator, state)
         }
         return undefined;
     })
