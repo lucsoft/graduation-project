@@ -50,7 +50,7 @@ addEventListener("actions-update", () => ViewState.change(({ update }) => update
 async function startProcess(id: ActionId) {
     let state = ViewState.viewOptions();
     state.update({ runner: { ...state.state.runner, [ id ]: [] } });
-    for await (const response of streamAsyncIterable(jcall.streamRun(id))) {
+    for await (const response of streamAsyncIterable(jcall.runAsStream(id))) {
         console.log(response);
         const state = ViewState.viewOptions();
         state.update({ runner: { ...state.state.runner, [ id ]: [ ...(state.state.runner?.[ id ] ?? []), response ] } });

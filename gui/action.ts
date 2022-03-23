@@ -2,7 +2,7 @@ import './style/actions.css';
 import { Component, Card, headless, Horizontal, Icon, Spacer, Vertical } from "../../WebGen/mod.ts";
 import { ActionType } from "./types.ts";
 import { Action } from "../json-calls-protocol/spec.ts";
-import { renderRichTitle } from "./richAction.ts";
+import { renderRichTitle } from "./inlineText.ts";
 import { chooseTranslation } from "./i18n.ts";
 
 
@@ -18,7 +18,6 @@ export function SimpleAction({ icon, color, displayText }: Action, type: ActionT
                     .addClass("close-button", "action-icon")
                 : null,
             renderRichTitle([ { type: "text", value: chooseTranslation(displayText) } ]),
-            Spacer(),
             Vertical(
                 type == "normal" && closeable ? Icon("cancel").addClass("close-button") : null,
                 actions

@@ -1,12 +1,8 @@
-.normal .rich-elements {
-    gap: 4px;
-}
-
-.rich-elements .element.winput span {
+.rich-elements .element .winput span {
     display: none;
 }
 
-.rich-elements .element.wbutton {
+.rich-elements .element .wbutton {
     height: 19px;
     padding: 0 5px;
     font-size: 0.8rem;
@@ -14,6 +10,21 @@
 
 .rich-elements .element .main {
     color: var(--on-card-text);
+}
+
+.vertical-stack.rich-elements {
+    flex-shrink: 1;
+    align-self: center;
+}
+
+.rich-elements .element, .rich-elements>.title {
+    margin: 0.3rem 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 .rich-elements .element .action-icon.main {

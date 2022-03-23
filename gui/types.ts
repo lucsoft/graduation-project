@@ -2,7 +2,12 @@ import { ActionId, CallParameters, CallStep, ColorType } from "../json-calls-pro
 import { State as JsonCallsState } from "../json-calls-protocol/spec.ts";
 
 export type ActionType = "full" | "full.focus" | "normal" | "small" | "small.light";
-export type TitleType = ({ type: "text", value: string } | { type: "parameter", value: CallParameters } | { type: "unset-parameter", value: CallParameters } | { type: "condition", value?: CallStep });
+export type TitleType = (
+    | { type: "text", value: string, step?: CallStep }
+    | { type: "parameter", value: CallParameters, step?: CallStep }
+    | { type: "unset-parameter", value: CallParameters, step?: CallStep }
+    | { type: "condition", value?: CallStep, step?: CallStep }
+);
 
 export type ActionState = {
     icon: string,
@@ -15,6 +20,7 @@ export type TabEntry = ActionId | "search-tab";
 
 export type State = {
     selectedTab: number,
-    tabs: TabEntry[]
+    tabs: TabEntry[],
+    debugMode: boolean,
     runner: Record<string, JsonCallsState[]>
 };

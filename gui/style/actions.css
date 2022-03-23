@@ -133,7 +133,7 @@ Action Normal
 */
 
 .action.normal {
-    height: 36px;
+    min-height: 36px;
     position: relative;
     box-shadow: 0px 0px 5px 1px rgba(0, 0, 0, 0.05);
 }
@@ -166,4 +166,8 @@ Action Normal
 
 .action.normal:hover .close-button {
     opacity: 1;
+}
+
+.space-between {
+    justify-content: space-between;
 }

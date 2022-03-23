@@ -1,95 +1,39 @@
 import { assert } from "https://deno.land/std@0.130.0/testing/asserts.ts";
-import { Button, ButtonStyle, Card, Color, ComponentArray, Grid, headless, Horizontal, Input, PlainText, Spacer, Vertical, View } from "../../WebGen/mod.ts";
+import { ComponentArray, Horizontal, PlainText, Spacer, Vertical } from "../../WebGen/mod.ts";
 import { toFirstUpperCase } from "../helper.ts";
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
-import { Action, ActionId, ActionTuple, CallStep } from "../json-calls-protocol/spec.ts";
+import { ActionId, ActionTuple, CallStep } from "../json-calls-protocol/spec.ts";
 import { SimpleAction } from "./action.ts";
 import { Dropable, Movable } from "./dragAndDrop.ts";
-import { choose, defaultOrTranslation } from "./i18n.ts";
-import { branches, sortByRelevance } from "./math.ts";
+import { choose } from "./i18n.ts";
 import { RichAction } from "./richAction.ts";
+import { SidePanel } from "./sidepanel.ts";
 import { State } from "./types.ts";
 
-export const EditorView = (jcall: JsonCalls, state: Partial<State>, _update: (data: Partial<State>) => void) => {
+export const EditorView = (jcall: JsonCalls, state: Partial<State>, update: (data: Partial<State>) => void) => {
     const actionId = state.tabs?.[ state.selectedTab ?? 0 ] as ActionId;
+    const running = Object.keys(state.runner ?? {}).includes(actionId);
     const action = jcall.metaFromId(actionId);
-    const actionList = View<{ actions: Map<ActionId, Action>, query: string }>(({ state }) => Vertical(
-        (state.actions ? Array.from(state.actions.entries())
-            .filter(([ _, x ]) => defaultOrTranslation(x.displayText).toLowerCase().startsWith(state.query?.toLowerCase() ?? ""))
-            .sort(sortByRelevance())
-            .filter(step => step[ 1 ].category !== "conditions")
-            .map(([ id, action ]) => Movable({ id, branch: branches(jcall, id) }, SimpleAction(action, "small", false), false)) : []),
-    ).setGap("8px"));
-
     if (!action) return null;
     return Horizontal(
-        Card(headless(
-            Vertical(
-                Input({
-                    placeholder: "Suchbegriff",
-                    liveOn: (val) => actionList
-                        .viewOptions()
-                        .update({ query: val })
-                }),
-                Grid(
-                    Button("Alle Aktionen")
-                        .setColor(Color.Colored)
-                        .setStyle(ButtonStyle.Secondary),
-                    Button("Ventile")
-                        .setColor(Color.Colored)
-                        .setStyle(ButtonStyle.Inline),
-                    Button("Motore")
-                        .setColor(Color.Colored)
-                        .setStyle(ButtonStyle.Inline),
-                    Button("Heater")
-                        .setColor(Color.Colored)
-                        .setStyle(ButtonStyle.Inline),
-                    Button("Flüssigkeiten")
-                        .setColor(Color.Colored)
-                        .setStyle(ButtonStyle.Inline),
-                    Button("System")
-                        .setColor(Color.Colored)
-                        .setStyle(ButtonStyle.Inline),
-                    Button("Laser")
-                        .setColor(Color.Colored)
-                        .setStyle(ButtonStyle.Inline),
-                    Button("Kamera")
-                        .setColor(Color.Colored)
-                        .setStyle(ButtonStyle.Inline),
-                    Button("Kasseten")
-                        .setColor(Color.Colored)
-                        .setStyle(ButtonStyle.Inline)
-                )
-                    .addClass("quick-filter")
-                    .setGap("0 1.5rem")
-                    .setPadding("18px 0")
-                    .setEvenColumns(3),
-                actionList
-                    .change(({ update }) => update({
-                        actions: jcall.actions
-                    }))
-                    .asComponent()
-            ).setPadding("10px")
-        ))
-            .addClass("sidepanel")
-            .setDirection("column")
-            .setAlign("stretch"),
+        SidePanel(running, update, state, jcall),
         Spacer(),
         action.steps === "native"
             ? PlainText("Can't edit a Native Action")
             : Vertical(
-                Dropable((data, del) => jcall.addFirstStep(actionId, data, del)),
-                ...action.steps.map(x => renderCallStep(state, jcall, x, [ actionId, action ])).flat()
+                running ? null : Dropable((data, del) => jcall.addFirstStep(actionId, data, del)),
+                ...action.steps.map(x => renderCallStep(state, jcall, x, { id: actionId, data: action }, running)).flat()
             ).setWidth("45%"),
         Spacer()
     ).addClass("container");
 };
 
-function renderCallStep(state: Partial<State>, jcall: JsonCalls, call: CallStep, main: ActionTuple) {
+function renderCallStep(state: Partial<State>, jcall: JsonCalls, call: CallStep, main: ActionTuple, running: boolean) {
     const step = jcall.meta(call);
     assert(step);
     const list: ComponentArray = [
-        Movable(call, RichAction(state, jcall, [ call.id, step ], call, main))
+        running ? RichAction(state, jcall, { id: call.id, data: step }, call, main, false)
+            : Movable(call, RichAction(state, jcall, { id: call.id, data: step }, call, main))
     ];
     if (call.branch)
         list.push(Object.entries(call.branch)
@@ -102,10 +46,10 @@ function renderCallStep(state: Partial<State>, jcall: JsonCalls, call: CallStep,
                         category: undefined,
                         color: step.color,
                         displayText: choose(step.branch?.otherBlocks?.[ id ]) ?? toFirstUpperCase(id)
-                    }, "normal"),
+                    }, "normal", !running),
                 Horizontal(
-                    Dropable((dropData, deleteOld) => jcall.addFirstBranchStep(main[ 0 ], dropData, call.trace!, id, deleteOld)),
-                    ...data.map(x => renderCallStep(state, jcall, x, main)).flat()
+                    Dropable((dropData, deleteOld) => jcall.addFirstBranchStep(main.id, dropData, call.trace!, id, deleteOld)),
+                    ...data.map(x => renderCallStep(state, jcall, x, main, running)).flat()
                 )
                     .setPadding("0 0 0 1rem")
                     .setDirection("column")
@@ -116,8 +60,8 @@ function renderCallStep(state: Partial<State>, jcall: JsonCalls, call: CallStep,
                 category: undefined,
                 steps: "native",
                 displayText: choose(step.branch?.endBlock)
-            }, "normal")
+            }, "normal", !running)
         )
-    list.push(Dropable((data, deleteOld) => jcall.addStepAfter(main[ 0 ], data, call.trace!, deleteOld)));
+    list.push(Dropable((data, deleteOld) => jcall.addStepAfter(main.id, data, call.trace!, deleteOld)));
     return list;
 }
