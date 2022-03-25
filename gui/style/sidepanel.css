@@ -1,9 +1,7 @@
-html {
-    --background-color: #ECECEC !important;
-}
-
 .sidepanel {
     background-color: #F9F9F9;
+
+    /* background: var(--background-card); */
     overflow: auto;
 }
 

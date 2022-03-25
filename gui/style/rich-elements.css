@@ -2,7 +2,7 @@
     display: none;
 }
 
-.rich-elements .element .wbutton {
+.rich-elements .element .wbutton, .tiny-element .wbutton {
     height: 19px;
     padding: 0 5px;
     font-size: 0.8rem;

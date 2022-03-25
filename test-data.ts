@@ -8,6 +8,11 @@ export function register(jcall: JsonCalls) {
         en: "Test"
     });
     jcall.provider.set("native.getLamp", () => lampState);
+    jcall.provider.set("native.opticits", () => undefined)
+    jcall.provider.set("native.systemCopyInfo", () => undefined)
+    jcall.provider.set("native.fluidsPrepAndRunBuffer", () => undefined)
+    jcall.provider.set("native.singleSeparation", () => undefined)
+    jcall.provider.set("native.moveMotors", () => undefined)
     jcall.provider.set("native.devices", () => [ "lamp" ]);
     jcall.provider.set("native.lamp", ({ value }) => {
         if (value.type !== "boolean" || !Object.hasOwn(value, "value")) return null;
@@ -60,6 +65,135 @@ export function register(jcall: JsonCalls) {
             }
         ]
     });
+    jcall.actions.set("native.moveMotors", {
+        color: "orange",
+        category: "motor",
+        icon: "view_in_ar",
+        steps: "native",
+        displayText: "Kanülen im Leerlauf",
+        inlineText: {
+            de: [ "Kanüle in ", 0, "Leerlauf stellen" ],
+            en: [ "Move all Motors to", 0 ],
+        },
+        parameters: [
+            { type: "string", name: "position" }
+        ]
+    })
+    jcall.actions.set("native.singleSeparation", {
+        color: "blue",
+        category: "motor",
+        icon: "swap_vert",
+        steps: "native",
+        displayText: "Einzelne Trennung",
+    })
+    jcall.actions.set("native.status", {
+        color: "steel",
+        category: "camera",
+        icon: "info",
+        steps: "native",
+        inlineText: {
+            de: [ "Systemstatus auf", 0 ],
+            en: [ "Set Systemstatus to", 0 ]
+        },
+        parameters: [
+            { type: "string", name: "status" }
+        ],
+        displayText: "Systemstatus setzen"
+    })
+    jcall.actions.set("native.systemCopyInfo", {
+        color: "steel",
+        category: "system",
+        icon: "dns",
+        steps: "native",
+        displayText: "Kopiere Systemdateien"
+    })
+    jcall.actions.set("native.checkpoint", {
+        color: "gray",
+        category: "system",
+        icon: "check_circle_outline",
+        steps: "native",
+        displayText: "Checkpoint",
+        parameters: [
+            { type: "string", name: "message" },
+            { type: "number", name: "duration", hint: "secound" }
+        ],
+        inlineText: {
+            de: [ "Checkpoint", 0, "erriecht in", 1 ],
+            en: []
+        }
+    })
+    jcall.actions.set("native.opticits", {
+        color: "green",
+        category: "camera",
+        icon: "center_focus_weak",
+        steps: "native",
+        displayText: "Kameraeinstellung abrufen"
+    })
+    jcall.actions.set("native.fluidsPrepAndRunBuffer", {
+        color: "blue",
+        category: "fluids",
+        icon: "water_drop",
+        steps: "native",
+        displayText: "Ventile vorbereiten und Puffer-Pumpe starten"
+    });
+    jcall.actions.set("user.demo", {
+        icon: "waving_hand",
+        color: "violet",
+        displayText: "Demo: Einzelne Trennung",
+        category: undefined,
+        steps: [
+            {
+                id: "native.opticits"
+            },
+            {
+                id: "buildIn.multiVariables",
+                parameter: [
+                    {
+                        type: "key-value",
+                        hidden: true,
+                        name: "store",
+                        value: [
+                            [ "redOn", true ],
+                            [ "blueOn", true ],
+                            [ "heaterOn", true ],
+                            [ "heaterTemp", 35, "tempature" ],
+                            [ "rinseTime", 5000, "milliseconds" ],
+                            [ "injectionVoltage", -3000, "power" ],
+                            [ "injectionTime", 30000, "milliseconds" ],
+                            [ "separationVoltage", -9000, "power" ],
+                            [ "separationTime", 450000, "milliseconds" ],
+                            [ "gelVolume", 135, "microliter" ],
+                            [ "gelFlowRate", 135, "micoliterPerMinute" ],
+                            [ "gelFillRate", 135, "micoliterPerMinute" ],
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "native.systemCopyInfo"
+            },
+            {
+                id: "native.fluidsPrepAndRunBuffer"
+            },
+            {
+                id: "buildIn.repeat",
+                parameter: [
+                    { type: "number", name: "count", value: 1 }
+                ],
+                branch: {
+                    repeating: [
+                        { id: "native.singleSeparation" }
+                    ]
+                }
+            },
+            {
+                id: "native.moveMotors",
+                parameter: [
+                    { type: "string", name: "position", value: "A1" }
+                ]
+            }
+        ]
+    })
     jcall.actions.set("user.empty", {
         icon: "check_box_outline_blank",
         color: "pink",

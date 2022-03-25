@@ -1,7 +1,7 @@
 .action {
     cursor: pointer;
     user-select: none;
-    background: white;
+    background: var(--on-card-background);
     flex-basis: 1;
 }
 
@@ -45,6 +45,7 @@
     position: relative;
     overflow: hidden;
     border-radius: 13px;
+    background: var(--background-card);
     box-shadow: 0 0 5px 1px rgba(0, 0, 0, 0.05);
 }
 
@@ -135,6 +136,7 @@ Action Normal
 .action.normal {
     min-height: 36px;
     position: relative;
+    background: var(--background-card);
     box-shadow: 0px 0px 5px 1px rgba(0, 0, 0, 0.05);
 }
 

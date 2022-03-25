@@ -175,6 +175,19 @@ export function registerMetaData(regi: Map<ActionId, Action>) {
             }
         ]
     })
+    regi.set("buildIn.multiVariables", {
+        color: "orange",
+        category: "meta",
+        icon: "post_add",
+        steps: "native",
+        displayText: {
+            de: "Variablen festlegen",
+            en: "Set variables"
+        },
+        parameters: [
+            { type: "key-value", name: "store", hidden: true }
+        ]
+    });
     regi.set("buildIn.variable", {
         steps: "native",
         color: "orange",

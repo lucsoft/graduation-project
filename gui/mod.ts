@@ -1,4 +1,4 @@
-import { MaterialIcons, Horizontal, Icon, SupportedThemes, Vertical, View, WebGen, CustomComponent, PlainText, headless, Card, Component, createElement, Custom } from "../../WebGen/mod.ts";
+import { MaterialIcons, Horizontal, Icon, SupportedThemes, Vertical, View, WebGen, CustomComponent, PlainText, headless, Card, Component, createElement, Custom, Dialog, Button } from "../../WebGen/mod.ts";
 import { State, TabEntry } from "./types.ts";
 import './style/color.css';
 import { EditorView } from "./editor.ts";
@@ -50,10 +50,16 @@ addEventListener("actions-update", () => ViewState.change(({ update }) => update
 async function startProcess(id: ActionId) {
     let state = ViewState.viewOptions();
     state.update({ runner: { ...state.state.runner, [ id ]: [] } });
-    for await (const response of streamAsyncIterable(jcall.runAsStream(id))) {
-        console.log(response);
-        const state = ViewState.viewOptions();
-        state.update({ runner: { ...state.state.runner, [ id ]: [ ...(state.state.runner?.[ id ] ?? []), response ] } });
+    try {
+
+        for await (const response of streamAsyncIterable(jcall.runAsStream(id))) {
+            console.log(response);
+            const state = ViewState.viewOptions();
+            state.update({ runner: { ...state.state.runner, [ id ]: [ ...(state.state.runner?.[ id ] ?? []), response ] } });
+        }
+
+    } catch (error) {
+        Dialog(() => PlainText(error)).setTitle("Error").allowUserClose().addButton("OK", "remove").open()
     }
     await (new Promise((done) => setTimeout(done, 200)))
     state = ViewState.viewOptions();

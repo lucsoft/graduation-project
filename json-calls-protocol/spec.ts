@@ -9,17 +9,18 @@ export type State =
 
 export type ActionId = `${"user" | "native" | "buildIn"}.${string}`;
 export type ActionTuple = { id: ActionId, data: Action };
-export type CallHints = "count" | "secound" | "power" | "lock" | "value";
+export type CallHints = "count" | "secound" | "power" | "lock" | "value" | "tempature" | "milliseconds" | "microliter" | "micoliterPerMinute";
 export type CallParameters =
     | { name: string; type: "number"; value?: number | Source; hint?: CallHints; hidden?: boolean }
     | { name: string; type: "boolean"; value?: boolean | Source; hint?: CallHints; hidden?: boolean }
     | { name: string; type: "string"; value?: string | Source; hint?: CallHints; hidden?: boolean }
     | { name: string; type: "array"; value?: unknown[] | Source; hint?: CallHints; hidden?: boolean }
-    | { name: string; type: "key-value"; value?: [ key: string, value?: number | boolean | string ][] | Source; hint?: CallHints; hidden: true };
+    | { name: string; type: "key-value"; value?: [ key: string, value?: number | boolean | string, hint?: CallHints ][] | Source; hint?: CallHints; hidden: true };
 
 export type CallStep = {
     id: ActionId,
     trace?: string,
+    collapsed?: boolean,
     parameter?: CallParameters[],
     condition?: CallStep,
     branch?: Record<string, CallStep[]>

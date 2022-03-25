@@ -84,17 +84,20 @@ export class JsonCalls {
         }
         return current;
     }
+    traceFindSingle(data: StepTree, trace: Trace): CallStep {
+        return this.traceFind(data, trace)[ parseInt(trace.split('.').at(-1)!) ]
+    }
 
     traceEditSingle(data: "native" | StepTree, trace: Trace, paramter: CallParameters) {
         console.log(data, trace, paramter);
         assert(!this.isNative(data))
-        const old = this.traceFind(data, trace)[ parseInt(trace.split('.').at(-1)!) ].parameter ?? [];
+        const old = this.traceFindSingle(data, trace).parameter ?? [];
         this.traceEdit(data, trace, (old)
             .map(x => x.name == paramter.name && x.type == paramter.type ? paramter : x))
     }
 
     traceEdit(data: StepTree, trace: Trace, parameter: CallParameters[]) {
-        this.traceFind(data, trace)[ parseInt(trace.split('.').at(-1)!) ].parameter = parameter;
+        this.traceFindSingle(data, trace).parameter = parameter;
         dispatchEvent(new Event("actions-update"));
     }
     /**
@@ -145,8 +148,8 @@ export class JsonCalls {
         if (!newVariable?.steps) return;
         if (this.isNative(newVariable.steps)) return;
 
-        newVariable.steps = [ step, ...newVariable.steps as unknown as StepTree ];
         if (deleteOld) this.deleteStep(id, step);
+        newVariable.steps = [ step, ...newVariable.steps as unknown as StepTree ];
         dispatchEvent(new Event("actions-update"));
     }
     addFirstBranchStep(id: ActionId, step: CallStep, from: Trace, branch: string, deleteOld: boolean): void {
@@ -164,11 +167,11 @@ export class JsonCalls {
         const action = this.actions.get(id);
         if (!action?.steps) return;
         if (this.isNative(action.steps)) return;
+        if (deleteOld) this.deleteStep(id, step);
 
         this.traceFind(action.steps, from)
             .splice(parseInt(from.split('.').at(-1)!) + 1, 0, step);
 
-        if (deleteOld) this.deleteStep(id, step);
         dispatchEvent(new Event("actions-update"));
     }
 

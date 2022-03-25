@@ -22,13 +22,13 @@ export function sortByRelevance(): ((a: ActionTuple, b: ActionTuple) => number) 
 
 
 export function ratioOffset(offset: number, lastElement: State, exec: State[]) {
-    return percent(1 - (1 - offset + lastElement._callsLeft) / exec[ 0 ]._callsLeft);
+    return percent(1 - (offset + lastElement._callsLeft) / (exec[ 0 ]._callsLeft + 1));
 }
 
 export function applyProgress(exec: State[] | undefined, div: HTMLDivElement) {
     if (exec && exec.length != 0) {
         const lastElement = exec.at(-1)!;
-        const offset = lastElement._status !== undefined ? lastElement._status : 0;
+        const offset = lastElement._status !== undefined ? 1 - lastElement._status : 0;
         div.style.width = `${ratioOffset(offset, lastElement, exec)}%`;
     }
 }

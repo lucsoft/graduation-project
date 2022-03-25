@@ -1,16 +1,16 @@
 import { Language } from "../json-calls-protocol/spec.ts";
 const language: Language = "de";
 export const translation = {
-    "unknown": { de: "Unbenannt", en: "Unknown" },
-    "buildIn.if.false": { de: "Sonst", en: "Else" },
-    "condition": { de: "Bedingung", en: "Condition" },
-    "hint.values": { de: "", en: "" },
-    "hint.secounds": { de: " Sekunden", en: " Secounds" },
-    "hint.secound": { de: " Sekunde", en: " Secound" },
-    "hint.counts": { de: "-mal", en: " times" },
-    "hint.count": { de: "-mal", en: " time" },
-    "hint.power.true": { de: "An", en: "On" },
-    "hint.power.false": { de: "Aus", en: "Off" }
+    "unknown": choose({ de: "Unbenannt", en: "Unknown" }),
+    "buildIn.if.false": choose({ de: "Sonst", en: "Else" }),
+    "condition": choose({ de: "Bedingung", en: "Condition" }),
+    "hint.values": choose({ de: "", en: "" }),
+    "hint.secounds": choose({ de: " Sekunden", en: " Secounds" }),
+    "hint.secound": choose({ de: " Sekunde", en: " Secound" }),
+    "hint.counts": choose({ de: "-mal", en: " times" }),
+    "hint.count": choose({ de: "-mal", en: " time" }),
+    "hint.power.true": choose({ de: "An", en: "On" }),
+    "hint.power.false": choose({ de: "Aus", en: "Off" })
 }
 export function choose<Type>(data?: Record<Language, Type>): Type | undefined {
     return data?.[ language ];
