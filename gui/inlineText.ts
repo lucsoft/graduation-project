@@ -13,7 +13,7 @@ export const getTracer = (state: Partial<State>, { id: actionId }: ActionTuple) 
 export function InlineText({ type, value, step }: TitleType, main?: ActionTuple, jcall?: JsonCalls, state?: Partial<State>) {
     if (type == "condition") {
         const display = jcall!.meta(value)?.displayText;
-        return Button(typeof display == "string" ? display : choose(display ?? translation.condition)!)
+        return Button(typeof display == "string" ? display : choose(display) ?? translation.condition)
             .setColor(Color.Colored)
             .onClick(() => alert("*Open Edit Menu for Conditions*"))
             .setStyle(value ? (getTracer(state!, main!)?._trace === value?.trace && value?.trace ? ButtonStyle.Normal : ButtonStyle.Secondary) : ButtonStyle.Inline)
@@ -28,7 +28,7 @@ export function InlineText({ type, value, step }: TitleType, main?: ActionTuple,
             .setStyle(ButtonStyle.Inline);
     if (type == "parameter") {
         if (typeof value.value == "boolean")
-            return Button(choose(translate(`hint.${value.hint ?? "power"}.${value.value.toString()}`))!)
+            return Button(translate(`hint.${value.hint ?? "power"}.${value.value.toString()}`)!)
                 .setColor(Color.Colored)
                 .onRightClick((e) => {
                     e.preventDefault();
@@ -45,7 +45,7 @@ export function InlineText({ type, value, step }: TitleType, main?: ActionTuple,
                 })
                 .setStyle(ButtonStyle.Secondary);
         if (typeof value.value == "number")
-            return Button(`${value.value.toString()}${choose(translate(`hint.${value.hint}${value.value == 1 ? "" : "s"}`))}`)
+            return Button(`${value.value.toString()}${translate(`hint.${value.hint}${value.value == 1 ? "" : "s"}`)}`)
                 .setColor(Color.Colored)
                 .onClick(async () => {
                     assert(main && step?.trace && jcall)

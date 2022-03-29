@@ -67,7 +67,7 @@ export function RichAction(state: Partial<State>, jcall: JsonCalls, Action: Acti
                                     Button(JSON.stringify(e[ 1 ])).setColor(Color.Colored).setStyle(ButtonStyle.Inline),
                                 ).setEvenColumns(2).addClass("tiny-element").setDirection("row"))
                             ).setGap("0.1rem").setMargin("0 0.65rem 0.7rem -0.2rem")
-                        return PlainText("TODO: Fix me");
+                        return PlainText("TODO: Add all display modes");
                     })
                 ) : null
             )
