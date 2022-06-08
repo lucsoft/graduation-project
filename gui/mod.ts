@@ -1,4 +1,4 @@
-import { MaterialIcons, Horizontal, Icon, SupportedThemes, Vertical, View, WebGen, CustomComponent, PlainText, headless, Card, Component, createElement, Custom, Dialog, Button } from "../../WebGen/mod.ts";
+import { MaterialIcons, Horizontal, Icon, SupportedThemes, Vertical, View, WebGen, CustomComponent, PlainText, headless, Card, Component, createElement, Custom, Dialog } from "https://raw.githubusercontent.com/lucsoft/WebGen/39f8439fb8e478dba5d351546f0156d331ebda3d/mod.ts";
 import { State, TabEntry } from "./types.ts";
 import './style/color.css';
 import { EditorView } from "./editor.ts";

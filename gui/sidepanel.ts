@@ -1,4 +1,4 @@
-import { Button, ButtonStyle, Card, Color, Component, Grid, headless, Horizontal, Icon, Input, PlainText, Spacer, Vertical, View } from "../../WebGen/mod.ts";
+import { Button, ButtonStyle, Card, Color, Component, Grid, headless, Horizontal, Icon, Input, PlainText, Spacer, Vertical, View } from "https://raw.githubusercontent.com/lucsoft/WebGen/39f8439fb8e478dba5d351546f0156d331ebda3d/mod.ts";
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
 import { Action, ActionId, ActionTuple, CallParameters } from "../json-calls-protocol/spec.ts";
 import { SimpleAction } from "./action.ts";

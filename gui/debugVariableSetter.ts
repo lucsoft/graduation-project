@@ -1,4 +1,4 @@
-import { Checkbox, Color, Dialog, DropDown, Horizontal, Input, PlainText, Spacer, Vertical } from "../../WebGen/mod.ts";
+import { Checkbox, Color, Dialog, DropDown, Horizontal, Input, PlainText, Spacer, Vertical } from "https://raw.githubusercontent.com/lucsoft/WebGen/39f8439fb8e478dba5d351546f0156d331ebda3d/mod.ts";
 
 export function openDialog<Options extends string>(data: Options[], $default: string[] = []) {
     return new Promise<Record<Options, string | undefined>>((done) => {

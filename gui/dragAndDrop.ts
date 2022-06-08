@@ -1,4 +1,4 @@
-import { Component, createElement, Custom } from "../../WebGen/mod.ts";
+import { Component, createElement, Custom } from "https://raw.githubusercontent.com/lucsoft/WebGen/39f8439fb8e478dba5d351546f0156d331ebda3d/mod.ts";
 import { CallStep } from "../json-calls-protocol/spec.ts";
 export function makeDropable(shell: Component, response: (action: CallStep, deleteOld: boolean) => void): Component {
     const data = shell.draw();

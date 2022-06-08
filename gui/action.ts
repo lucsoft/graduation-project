@@ -1,5 +1,5 @@
 import './style/actions.css';
-import { Component, Card, headless, Horizontal, Icon, Spacer, Vertical } from "../../WebGen/mod.ts";
+import { Component, Card, headless, Horizontal, Icon, Spacer, Vertical } from "https://raw.githubusercontent.com/lucsoft/WebGen/39f8439fb8e478dba5d351546f0156d331ebda3d/mod.ts";
 import { ActionType } from "./types.ts";
 import { Action } from "../json-calls-protocol/spec.ts";
 import { renderRichTitle } from "./inlineText.ts";

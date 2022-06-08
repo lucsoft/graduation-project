@@ -1,5 +1,5 @@
 import { assert } from "https://deno.land/std@0.130.0/testing/asserts.ts";
-import { ComponentArray, Horizontal, PlainText, Spacer, Vertical } from "../../WebGen/mod.ts";
+import { ComponentArray, Horizontal, PlainText, Spacer, Vertical } from "https://raw.githubusercontent.com/lucsoft/WebGen/39f8439fb8e478dba5d351546f0156d331ebda3d/mod.ts";
 import { toFirstUpperCase } from "../helper.ts";
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
 import { ActionId, ActionTuple, CallStep } from "../json-calls-protocol/spec.ts";

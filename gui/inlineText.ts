@@ -1,5 +1,5 @@
 import { assert } from "https://deno.land/std@0.130.0/testing/asserts.ts";
-import { Icon, PlainText, Button, Color, ButtonStyle } from "../../WebGen/mod.ts";
+import { Icon, PlainText, Button, Color, ButtonStyle } from "https://raw.githubusercontent.com/lucsoft/WebGen/39f8439fb8e478dba5d351546f0156d331ebda3d/mod.ts";
 import { toFirstUpperCase } from "../helper.ts";
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
 import { ActionTuple, CallParameters, CallStep, Trace } from "../json-calls-protocol/spec.ts";

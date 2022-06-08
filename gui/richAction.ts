@@ -1,4 +1,4 @@
-import { Component, Card, headless, Horizontal, Icon, Spacer, Vertical, PlainText, createElement, Custom, Box, Input, Button, ButtonStyle, Grid, Color } from "../../WebGen/mod.ts";
+import { Component, Card, headless, Horizontal, Icon, Spacer, Vertical, PlainText, createElement, Custom, Box, Input, Button, ButtonStyle, Grid, Color } from "https://raw.githubusercontent.com/lucsoft/WebGen/39f8439fb8e478dba5d351546f0156d331ebda3d/mod.ts";
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
 import { CallStep, ActionTuple, Source } from "../json-calls-protocol/spec.ts";
 import { mapDataToRichTitle } from "./math.ts";
@@ -62,9 +62,9 @@ export function RichAction(state: Partial<State>, jcall: JsonCalls, Action: Acti
                     ...(caller.parameter ?? []).filter((x) => x.hidden).map(x => {
                         if (x.type == "key-value")
                             return Vertical(
-                                (x.value as Exclude<typeof x.value, Source>)!.map(e => Grid(
-                                    Button(toFirstUpperCase(e[ 0 ])).setStyle(ButtonStyle.Inline),
-                                    Button(JSON.stringify(e[ 1 ])).setColor(Color.Colored).setStyle(ButtonStyle.Inline),
+                                (x.value as Exclude<typeof x.value, Source>)!.map(([ key, value ]) => Grid(
+                                    Button(toFirstUpperCase(key)).setStyle(ButtonStyle.Inline),
+                                    Button(JSON.stringify(value)).setColor(Color.Colored).setStyle(ButtonStyle.Inline),
                                 ).setEvenColumns(2).addClass("tiny-element").setDirection("row"))
                             ).setGap("0.1rem").setMargin("0 0.65rem 0.7rem -0.2rem")
                         return PlainText("TODO: Add all display modes");

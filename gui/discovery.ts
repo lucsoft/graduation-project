@@ -1,4 +1,4 @@
-import { Component, Horizontal, Spacer, Vertical, PlainText, Grid } from "../../WebGen/mod.ts";
+import { Component, Horizontal, Spacer, Vertical, PlainText, Grid } from "https://raw.githubusercontent.com/lucsoft/WebGen/39f8439fb8e478dba5d351546f0156d331ebda3d/mod.ts";
 import { limit } from "../helper.ts";
 import { JsonCalls } from "../json-calls-protocol/mod.ts";
 import { SimpleAction } from "./action.ts";
