@@ -178,7 +178,7 @@ export function register(jcall: JsonCalls) {
             {
                 id: "buildIn.repeat",
                 parameter: [
-                    { type: "number", name: "count", value: 1 }
+                    { type: "number", name: "count", value: 500 }
                 ],
                 branch: {
                     repeating: [
@@ -194,20 +194,55 @@ export function register(jcall: JsonCalls) {
             }
         ]
     })
-    jcall.actions.set("user.empty", {
-        icon: "check_box_outline_blank",
-        color: "pink",
-        displayText: "Leerer Aktion",
-        category: undefined,
+    jcall.actions.set("user.lampToggle", {
+        icon: "light",
+        category: "test",
+        displayText: "Verzweigungs Test",
+        color: "yellow",
         steps: [
-
+            {
+                id: "native.getLamp"
+            },
+            {
+                id: "buildIn.if",
+                parameter: [ { type: "boolean", name: "value", value: { type: "response", id: "0" } } ],
+                condition: { id: "buildIn.truthy" },
+                branch: {
+                    true: [
+                        { id: "native.lamp", parameter: [ { type: "boolean", name: "value", value: false } ] },
+                        {
+                            id: "buildIn.sleep",
+                            parameter: [
+                                { name: "amount", type: "number", value: 2 }
+                            ]
+                        },
+                        { id: "native.lamp", parameter: [ { type: "boolean", name: "value", value: true } ] },
+                        {
+                            id: "buildIn.sleep",
+                            parameter: [
+                                { name: "amount", type: "number", value: 1 }
+                            ]
+                        },
+                        { id: "native.lamp", parameter: [ { type: "boolean", name: "value", value: false } ] }
+                    ],
+                    false: [
+                        { id: "native.lamp", parameter: [ { type: "boolean", name: "value", value: true } ] },
+                        {
+                            id: "buildIn.sleep",
+                            parameter: [
+                                { name: "amount", type: "number", value: 2 }
+                            ]
+                        },
+                    ]
+                }
+            }
         ]
     })
     jcall.actions.set("user.sleep", {
         icon: "check_box_outline_blank",
         color: "pink",
         category: undefined,
-        displayText: "Einfaches warten",
+        displayText: "Einfaches Warten",
         steps: [
             {
                 id: "buildIn.sleep",
@@ -270,47 +305,11 @@ export function register(jcall: JsonCalls) {
             }
         ]
     })
-    jcall.actions.set("user.lampToggle", {
-        icon: "light",
-        category: "test",
-        displayText: "Branching Test",
-        color: "yellow",
-        steps: [
-            {
-                id: "native.getLamp"
-            },
-            {
-                id: "buildIn.if",
-                parameter: [ { type: "boolean", name: "value", value: { type: "response", id: "0" } } ],
-                condition: { id: "buildIn.truthy" },
-                branch: {
-                    true: [
-                        { id: "native.lamp", parameter: [ { type: "boolean", name: "value", value: false } ] },
-                        {
-                            id: "buildIn.sleep",
-                            parameter: [
-                                { name: "amount", type: "number", value: 1 }
-                            ]
-                        },
-                        { id: "native.lamp", parameter: [ { type: "boolean", name: "value", value: true } ] },
-                        {
-                            id: "buildIn.sleep",
-                            parameter: [
-                                { name: "amount", type: "number", value: 0.5 }
-                            ]
-                        },
-                        { id: "native.lamp", parameter: [ { type: "boolean", name: "value", value: false } ] }
-                    ],
-                    false: [ { id: "native.lamp", parameter: [ { type: "boolean", name: "value", value: true } ] } ]
-                }
-            }
-        ]
-    })
     jcall.actions.set("user.lampToggleWithVariables", {
         icon: "light",
         color: "blue",
         category: "test",
-        displayText: "Toggles the lamp",
+        displayText: "Lampe umschalten",
         variables: {
             state: false
         },

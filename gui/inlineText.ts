@@ -24,7 +24,14 @@ export function InlineText({ type, value, step }: TitleType, main?: ActionTuple,
     if (type == "unset-parameter")
         return Button("Eingabe")
             .setColor(Color.Colored)
-            .onClick(() => alert("*Open Edit Menu for Parameter*"))
+            .onClick(async () => {
+                assert(main && step?.trace && jcall)
+                const data = await openDialog([ "boolean", "response", "variable" ], [ value.value?.toString() ?? "false" ]);
+                console.log(data);
+                handleResponseAndVariable(data, jcall, main, step.trace, value);
+                if (data.boolean !== undefined)
+                    jcall.traceEditSingle(main.data.steps, step.trace, { ...value, value: data.boolean !== "false" } as CallParameters);
+            })
             .setStyle(ButtonStyle.Inline);
     if (type == "parameter") {
         if (typeof value.value == "boolean")
@@ -52,7 +59,7 @@ export function InlineText({ type, value, step }: TitleType, main?: ActionTuple,
                     const data = await openDialog([ "number", "response", "variable" ]);
                     handleResponseAndVariable(data, jcall, main, step.trace, value);
                     if (data.number)
-                        jcall.traceEditSingle(main.data.steps, step.trace, { ...value, value: parseInt(data.number) } as CallParameters);
+                        jcall.traceEditSingle(main.data.steps, step.trace, { ...value, value: parseFloat(data.number) } as CallParameters);
                 })
                 .setStyle(ButtonStyle.Secondary);
         if (typeof value.value == "string")

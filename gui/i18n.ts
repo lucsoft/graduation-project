@@ -19,7 +19,7 @@ export function chooseTranslation(data?: Record<Language, string> | string): str
     return typeof data === "string" ? data : data?.[ language ] ?? chooseTranslation(translation.unknown);
 }
 export const translate = (key: string) => {
-    return translation[ key as keyof typeof translation ] || key
+    return translation[ key as keyof typeof translation ] ?? key
 }
 export const defaultOrTranslation = (data?: string | Record<Language, string>): string => {
     if (typeof data == "string") return data;

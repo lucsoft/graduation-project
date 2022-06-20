@@ -10,7 +10,7 @@ export function openDialog<Options extends string>(data: Options[], $default: st
 
         const dialog = Dialog<State>(({ use, update, state }) => {
             use(Vertical(
-                PlainText("TODO: Diesen Dialog inline machen").setFont(0.6, 500),
+                // PlainText("TODO: Diesen Dialog inline machen").setFont(0.6, 500),
                 DropDown({
                     text: (state.type !== undefined ? state.options?.[ state.type ] : undefined) ?? "Art auswählen",
                     color: Color.Colored,

@@ -74,7 +74,7 @@ function renderNavigationEntry(state: Partial<State>, update: (data: Partial<Sta
         let element: Component;
         const div = createElement("div")
         const progress = Custom(div).addClass("progressbar")
-        if (actionId == "search-tab") element = Card(headless(PlainText("Search"))).addClass("action", "full");
+        if (actionId == "search-tab") element = Card(headless(PlainText("Suche"))).addClass("action", "full");
         else {
             const action = jcall.metaFromId(actionId)!;
             const exec = actionId ? state.runner?.[ actionId ] : undefined;
